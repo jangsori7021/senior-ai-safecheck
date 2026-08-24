@@ -1,0 +1,341 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>시니어 AI 생활 플랫폼 v1.4</title><style>
+*{box-sizing:border-box}body{margin:0;background:#f2f1ec;font-family:Arial,'Noto Sans KR',sans-serif;color:#1d2730}.app{max-width:520px;margin:auto;min-height:100vh;background:#fff;padding:20px 17px 95px}
+.brand{font-size:17px;font-weight:800;color:#50606b}h1{font-size:30px;line-height:1.28;margin:12px 0 6px}.lead{font-size:18px;line-height:1.5;color:#5f6870;margin:0 0 17px}
+.ai{width:100%;border:0;border-radius:25px;padding:23px 18px;background:#17324d;color:#fff;text-align:left}.ai .mic{font-size:38px}.ai b{display:block;font-size:27px;margin:6px 0}.ai small{font-size:17px}
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:12px}.q{border:2px solid #e3e6e3;background:#f8f9f7;border-radius:22px;padding:17px 13px;min-height:128px;text-align:left}.q span{font-size:32px}.q b{display:block;font-size:21px;margin:7px 0}.q small{font-size:15px;color:#68727a;line-height:1.35}
+.today{margin:20px 0 8px;padding:17px;border-radius:20px;background:#f4f1e8}.today b{font-size:20px}.today p{font-size:17px;margin:8px 0 0;line-height:1.45}
+.more{width:100%;border:0;background:#eef1ef;border-radius:18px;padding:16px;font-size:19px;font-weight:800;margin-top:12px}
+.screen{display:none}.screen.on{display:block}.back{border:0;background:#edf0ee;border-radius:13px;padding:11px 14px;font-size:17px;font-weight:800}
+.action{width:100%;border:0;border-radius:19px;padding:18px;margin:9px 0;background:#eef2f4;font-size:20px;font-weight:800;text-align:left}.primary{background:#17324d;color:white}
+.box{padding:17px;border-radius:18px;background:#f5f4ef;font-size:18px;line-height:1.55;margin:13px 0}.chips button{border:0;border-radius:20px;padding:10px 13px;margin:4px;font-size:16px;font-weight:700}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);max-width:520px;width:100%;display:flex;justify-content:space-around;background:#fff;border-top:1px solid #ddd;padding:9px 4px}.nav button{border:0;background:white;font-size:14px;font-weight:800}.nav span{display:block;font-size:23px}
+</style></head><body><main class="app">
+<section id="home" class="screen on"><div class="brand">나의 AI 생활친구</div><h1>안녕하세요 😊<br>제가 도와드릴게요.</h1><p class="lead">말하거나, 필요한 버튼을 눌러보세요.</p>
+<button class="more" onclick="go('first3')">✨ 처음이라면 3분 체험하기 〉</button><button class="more" onclick="go('realCapture')">📷 사진으로 바로 물어보기 〉</button><button class="ai" onclick="go('talk')"><span class="mic">🎙️</span><b>무엇이든 말해보세요</b><small>어렵게 질문하지 않아도 괜찮아요</small></button>
+<div class="quick">
+<button class="q" onclick="go('look')"><span>📷</span><b>이거 봐줘</b><small>문자·사진·안내문</small></button>
+<button class="q" onclick="go('find')"><span>🔎</span><b>찾아줘</b><small>정보·혜택·필요한 곳</small></button>
+<button class="q" onclick="go('enjoy')"><span>😊</span><b>오늘 뭐하지?</b><small>맛집·나들이·취미·요리</small></button>
+<button class="q" onclick="go('family')"><span>👨‍👩‍👧</span><b>가족</b><small>전화·메시지·도움</small></button>
+</div>
+<div class="today"><b>📅 오늘 한눈에</b><p>오후 2시 병원 예약<br>오후 6시 가족 저녁 약속</p></div>
+<button class="more" onclick="go('more')">생활 메뉴 더 보기 〉</button></section>
+
+<section id="talk" class="screen"><button class="back" onclick="go('home')">← 홈</button>
+<h1>편하게 말씀하세요</h1><p class="lead">마이크를 누르고 말씀하시면 글자로 보여드릴게요.</p>
+<button id="micBtn" class="action primary" onclick="startSpeech()">🎙️ 말하기 시작</button>
+<div id="speechStatus" class="box">아직 듣고 있지 않습니다.</div>
+<div id="speechResult" class="box"><b>제가 들은 내용</b><br><span id="heardText">여기에 표시됩니다.</span></div>
+<button id="confirmSpeech" class="action" style="display:none" onclick="prepareIntent()">✓ 이 내용이 맞아요</button>
+<button id="retrySpeech" class="action" style="display:none" onclick="startSpeech()">🎙️ 다시 말하기</button>
+<button id="fixSpeech" class="action" style="display:none" onclick="go('voicefix')">✏️ 한 부분만 고치기</button>
+<div class="box">※ Chrome/Edge 등 브라우저가 음성인식을 지원해야 합니다. 마이크 권한을 허용해 주세요.</div></section>
+<section id="confirm" class="screen"><button class="back" onclick="go('talk')">← 다시</button><h1>제가 이렇게 들었어요</h1><div class="box">“근처에서 조용한 한식집을 찾고 싶어요.”</div><button class="action primary">✓ 맞아요</button><button class="action" onclick="go('talk')">🎙️ 다시 말할게요</button><button class="action" onclick="go('voicefix')">✏️ 한 부분만 고칠게요</button></section>
+<section id="look" class="screen"><button class="back" onclick="go('home')">← 홈</button><h1>보여주시면 쉽게 설명할게요</h1><button class="action primary">📷 사진 찍기</button><button class="action">🖼️ 사진 고르기</button><div class="box">결과는 <b>무슨 내용인지 → 중요한 점 → 무엇을 하면 되는지</b> 순서로 보여드립니다.</div></section>
+<section id="find" class="screen"><button class="back" onclick="go('home')">← 홈</button><h1>제가 대신 찾아드릴게요</h1><button class="action primary">🎙️ 말로 찾기</button><button class="action">🎁 복지·생활혜택</button><button class="action">🏥 병원·약국</button><button class="action">🚌 교통·생활정보</button></section>
+<section id="enjoy" class="screen"><button class="back" onclick="go('home')">← 홈</button>
+<h1>맛집·나들이 😊</h1><p class="lead">어디서 무엇을 하고 싶은지 쉽게 골라보세요.</p>
+<button class="action primary" onclick="go('restaurant')">🍚 내 주변 맛집 찾기</button>
+<button class="action" onclick="go('outing')">🚗 오늘 나들이 추천</button>
+<button class="action">☕ 조용한 카페 찾기</button></section>
+
+<section id="restaurant" class="screen"><button class="back" onclick="go('enjoy')">← 맛집·나들이</button>
+<h1>어떤 곳을 찾으세요?</h1>
+<button class="action primary" onclick="showRestaurants()">🎙️ 말로 찾기</button>
+<div class="chips"><button onclick="showRestaurants()">한식</button><button onclick="showRestaurants()">조용한 곳</button><button onclick="showRestaurants()">가까운 곳</button><button onclick="showRestaurants()">가족 식사</button></div>
+<div id="restaurantResults" class="box">예: “여기 근처에서 아내하고 조용하게 먹을 한식집 찾아줘.”</div></section>
+
+<section id="restaurantDetail" class="screen"><button class="back" onclick="go('restaurant')">← 추천 결과</button>
+<h1>추천 1순위</h1><div class="box"><b>정갈한 한식집 예시</b><br>현재 위치에서 가깝고, 조용한 식사를 원하는 조건에 잘 맞는 곳입니다.<br><br>※ v1.4에서는 실제 업체 데이터가 아닌 UX 예시입니다.</div>
+<button class="action primary">🗺️ 길 안내</button><button class="action">📞 전화하기</button><button class="action">📅 예약하기</button>
+<div class="box"><b>사업 연결 지점</b><br>예약 완료 시 제휴 수수료를 연결할 수 있습니다. 제휴 여부보다 사용자 조건 적합성을 먼저 평가합니다.</div></section>
+
+<section id="outing" class="screen"><button class="back" onclick="go('enjoy')">← 맛집·나들이</button>
+<h1>오늘 어디 가볼까요?</h1><button class="action primary">🎙️ 원하는 나들이 말하기</button>
+<button class="action">🌳 가까운 산책·공원</button><button class="action">🌸 볼거리·명소</button><button class="action">☕ 카페와 함께</button>
+<div class="box">향후 현재 위치·날씨·이동거리·취향을 함께 고려해 3곳 정도만 추천합니다.</div></section>
+<section id="family" class="screen"><button class="back" onclick="go('home')">← 홈</button><h1>가족</h1><button class="action primary">📞 가족에게 전화</button><button class="action">💬 메시지 보내기</button><button class="action">🆘 도움 요청</button><button class="action" onclick="go('share')">❤️ 부모님께 이 앱 보내기</button></section>
+<section id="more" class="screen"><button class="back" onclick="go('home')">← 홈</button><h1>생활 메뉴</h1><button class="action">📅 일정·약속</button><button class="action">🛡️ 사기 의심 확인</button><button class="action">🎁 복지·지원</button><button class="action">🏥 병원·약국</button><button class="action" onclick="go('voiceSettings')">⚙️ 글씨·음성 설정</button><button class="action" onclick="go('mvpStatus')">🚀 출시 MVP 기준</button><button class="action" onclick="go('business17')">💰 첫 사업모델</button><button class="action" onclick="go('pilot18')">🧪 출시 전 사용자 검증</button><button class="action" onclick="go('reality')">🔧 실제 작동 상태</button><button class="action" onclick="go('pipeline14')">🧠 AI 파이프라인 상태</button><div class="box"><b>원칙:</b> 기능이 늘어나도 홈은 복잡하게 만들지 않습니다.</div></section>
+<section id="business" class="screen"><button class="back" onclick="go('home')">← 홈</button>
+<h1>서비스 연결 구조</h1>
+<div class="box"><b>무료 생활도움</b><br>말하기 · 기본 찾기 · 기본 사진 설명</div>
+<div class="box"><b>프리미엄 후보</b><br>생활기억 · 고급 분석 · 가족 안심 · 맞춤 알림</div>
+<div class="box"><b>거래 연결 후보</b><br>맛집 · 여행 · 체험 · 클래스 · 생활상품</div>
+<div class="box"><b>기관 제공 후보</b><br>지자체 · 복지기관 · 통신 · 보험 · 금융</div>
+</section>
+<section id="welcome" class="screen"><button class="back" onclick="go('home')">← 홈</button>
+<h1>처음 오셨군요 😊</h1><p class="lead">회원가입부터 하지 않아도 됩니다. 먼저 한번 써보세요.</p>
+<button class="action primary" onclick="go('talk')">🎙️ 바로 말해보기</button>
+<button class="action" onclick="go('look')">📷 사진 보여주기</button>
+<div class="box"><b>첫 성공 경험</b><br>처음 1~2분 안에 “이거 편하네”를 느끼게 하는 것이 목표입니다.</div></section>
+
+<section id="share" class="screen"><button class="back" onclick="go('family')">← 가족</button>
+<h1>소중한 분께 보내드릴까요?</h1><p class="lead">복잡한 설명 없이 링크 하나로 바로 시작할 수 있게 합니다.</p>
+<button class="action primary">💬 카카오톡으로 부모님께 보내기</button>
+<button class="action">👫 친구에게 알려주기</button>
+<button class="action">🔗 링크 복사</button>
+<div class="box"><b>추천받은 분의 첫 화면</b><br>“○○님이 보내드린 생활도움 앱이에요.”<br><br><b>[바로 써보기]</b></div></section>
+
+<section id="first3" class="screen"><button class="back" onclick="go('home')">← 홈</button>
+<h1>처음 3분만 써보세요 😊</h1><p class="lead">가장 필요한 순간을 먼저 체험해 보세요.</p>
+<button class="action primary" onclick="go('safe')">🛡️ 수상한 문자 보여주기</button>
+<button class="action" onclick="go('screenhelp')">📱 이 화면에서 뭘 눌러?</button>
+<button class="action" onclick="go('explain')">📷 이게 무슨 뜻이야?</button>
+<div class="box"><b>목표</b><br>설명서를 읽기 전에 한 번의 문제 해결을 경험하게 합니다.</div></section>
+
+<section id="safe" class="screen"><button class="back" onclick="go('first3')">← 처음 체험</button>
+<h1>이거 안전해? 🛡️</h1><p class="lead">문자나 화면을 보여주세요. 위험 신호부터 살펴볼게요.</p>
+<button class="action primary" onclick="go('safeResult')">📷 수상한 문자 찍기</button>
+<button class="action">🖼️ 캡처한 화면 고르기</button>
+<button class="action">🎙️ 받은 전화 내용 말하기</button>
+<div class="box">AI가 확실하지 않은 내용을 “안전하다”고 단정하지 않도록 설계합니다.</div></section>
+
+<section id="safeResult" class="screen"><button class="back" onclick="go('safe')">← 다시 보기</button>
+<h1>잠깐! 확인이 필요해요</h1>
+<div class="box"><b>⚠️ 위험 신호가 있어요</b><br><br>링크를 누르거나 돈을 보내기 전에 한 번 더 확인하는 것이 좋습니다.<br><br><b>지금 할 일</b><br>① 링크 누르지 않기<br>② 송금하지 않기<br>③ 가족이나 공식 연락처로 확인하기<br><br>※ 이 화면은 UX 예시이며 실제 사기 판정 결과가 아닙니다.</div>
+<button class="action primary" onclick="go('family')">👨‍👩‍👧 가족에게 바로 보여주기</button>
+<button class="action">📞 공식 연락처 확인하기</button></section>
+
+<section id="screenhelp" class="screen"><button class="back" onclick="go('first3')">← 처음 체험</button>
+<h1>여기서 뭘 눌러?</h1><p class="lead">화면을 보여주면 한 번에 한 단계씩 알려드릴게요.</p>
+<button class="action primary">📷 화면 보여주기</button>
+<div class="box"><b>예시</b><br>“오른쪽 위에 있는 <b>설정</b>을 눌러주세요.”<br><br>다음 단계는 누른 뒤에 알려드립니다.</div>
+<button class="action">🔊 설명을 소리로 듣기</button></section>
+
+<section id="explain" class="screen"><button class="back" onclick="go('first3')">← 처음 체험</button>
+<h1>이게 무슨 뜻이야?</h1><button class="action primary">📷 사진 찍기</button>
+<div class="box"><b>1. 무슨 내용인가요?</b><br>쉬운 말로 설명<br><br><b>2. 나에게 중요한 것은?</b><br>꼭 알아야 할 것만 표시<br><br><b>3. 이제 뭘 하면 되나요?</b><br>전화·일정·가족 공유 등 다음 행동 제시</div></section>
+
+<section id="voicefix" class="screen"><button class="back" onclick="go('talk')">← 말하기</button>
+<h1>한 부분만 고칠게요</h1><div class="box">제가 들은 내용:<br><b>“내일 오후 3시에 정형외과”</b></div>
+<button class="action primary">🎙️ 시간만 다시 말하기</button>
+<button class="action">📅 날짜만 바꾸기</button>
+<button class="action">🏥 장소만 바꾸기</button>
+<div class="box">처음부터 다시 말하지 않아도 됩니다.</div></section>
+
+<section id="understand" class="screen"><button class="back" onclick="go('talk')">← 다시 말하기</button>
+<h1>제가 이렇게 이해했어요</h1>
+<div class="box" id="intentSummary"><b>말씀하신 내용을 정리하고 있어요.</b></div>
+<button class="action primary" onclick="runIntent()">✓ 맞아요, 도와줘</button><button class="action" onclick="speakElement('intentSummary')">🔊 읽어줘</button>
+<button class="action" onclick="go('voicefix')">✏️ 한 부분만 고칠게요</button>
+<button class="action" onclick="go('talk')">🎙️ 다시 말할게요</button>
+</section>
+
+<section id="intentResult" class="screen"><button class="back" onclick="go('understand')">← 확인</button>
+<h1>이렇게 도와드릴게요</h1>
+<div class="box" id="intentAction"></div>
+<button class="action" onclick="speakElement('intentAction')">🔊 설명 읽어줘</button><button class="action primary" id="intentPrimary"  onclick="go('find')">계속하기</button>
+<button class="action" onclick="go('home')">🏠 홈으로</button></section>
+
+<section id="voiceSettings" class="screen"><button class="back" onclick="go('more')">← 생활 메뉴</button>
+<h1>말하기·듣기 설정</h1>
+<div class="box"><b>글을 읽기 어려우시면 제가 소리로 읽어드릴게요.</b></div>
+<button class="action primary" onclick="speakText('안녕하세요. 천천히 편하게 말씀하세요.')">🔊 음성 안내 시험 듣기</button>
+<button class="action" onclick="setRate(0.8)">🐢 천천히 읽기</button>
+<button class="action" onclick="setRate(1.0)">🙂 보통 속도</button>
+<button class="action" onclick="setRate(1.15)">⚡ 조금 빠르게</button>
+<button class="action" onclick="toggleAutoSpeak()">🗣️ 결과 자동 읽기 켜기/끄기</button>
+<div id="voiceSettingStatus" class="box">현재 읽기 속도: 보통</div></section>
+
+<section id="mvpStatus" class="screen"><button class="back" onclick="go('more')">← 생활 메뉴</button>
+<h1>출시 MVP 기준</h1>
+<div class="box"><b>출시 1순위</b><br>🎙️ 말로 요청하기<br>🛡️ 이거 안전해?<br>📷 이게 무슨 뜻이야?<br>📱 여기서 뭘 눌러?<br>🔎 나에게 맞는 것만 찾아줘<br>🤝 전화·길찾기·가족 등 다음 행동 연결</div>
+<div class="box"><b>출시 후 확장</b><br>맛집·나들이·요리·취미의 거래 연결<br>가족 프리미엄<br>개인 생활기억<br>기관용 서비스</div>
+<div class="box"><b>출시 전 검증</b><br>음성 성공률 · 첫 문제 해결률 · 7일 재방문 · 가족 추천 · 유료의향</div>
+</section>
+
+<section id="reality" class="screen"><button class="back" onclick="go('mvpStatus')">← MVP 기준</button>
+<h1>실제 작동 상태</h1>
+<div class="box"><b>🟢 부분 실제 작동</b><br>음성인식(STT) · 음성읽기(TTS)<br><small>브라우저 지원 환경에 따라 편차가 있습니다.</small></div>
+<div class="box"><b>🟡 프로토타입</b><br>AI 의도이해 · 맞춤찾기 · 다음 행동 연결</div>
+<div class="box"><b>⚪ 아직 UX 화면</b><br>사기 분석 · 사진/문서 실제 분석 · 화면 조작 안내</div>
+<div class="box"><b>다음 개발 집중</b><br>카메라/이미지 → 실제 AI 분석 → 쉬운 설명 → 안전 분기 → 다음 행동</div>
+</section>
+
+<section id="realCapture" class="screen"><button class="back" onclick="go('home')">← 홈</button>
+<h1>사진으로 물어보세요 📷</h1>
+<p class="lead">문자, 안내문, 스마트폰 화면을 찍거나 사진에서 고르세요.</p>
+<label class="action primary" style="display:block">📷 카메라로 찍기
+<input id="cameraInput" type="file" accept="image/*" capture="environment" style="display:none" onchange="previewImage(event)"></label>
+<label class="action" style="display:block">🖼️ 사진에서 고르기
+<input id="galleryInput" type="file" accept="image/*" style="display:none" onchange="previewImage(event)"></label>
+<div id="imagePreviewBox" class="box" style="display:none"><img id="imagePreview" alt="선택한 사진" style="width:100%;max-height:340px;object-fit:contain;border-radius:14px"></div>
+<div id="captureNext" style="display:none">
+<h1 style="font-size:23px">무엇을 도와드릴까요?</h1>
+<button class="action primary" onclick="localAnalyze('safe')">🛡️ 이거 안전해?</button>
+<button class="action" onclick="localAnalyze('explain')">📄 이게 무슨 뜻이야?</button>
+<button class="action" onclick="localAnalyze('screen')">📱 여기서 뭘 눌러?</button>
+</div>
+<div class="box"><b>개인정보 안내</b><br>현재 v1.4에서는 선택한 사진을 서버로 보내지 않고 이 기기 화면에만 미리 보여줍니다. 실제 AI 전송은 아직 연결하지 않았습니다.</div>
+</section>
+
+<section id="captureAudit" class="screen"><button class="back" onclick="go('realCapture')">← 사진 다시 선택</button>
+<h1 id="captureAuditTitle">분석 준비</h1>
+<div id="captureAuditText" class="box"></div>
+<button class="action primary" onclick="go('home')">확인했어요</button>
+</section>
+
+<section id="pipeline14" class="screen"><button class="back" onclick="go('reality')">← 실제 작동 상태</button>
+<h1>AI 분석 파이프라인</h1>
+<div class="box"><b>1. 사진 입력</b><br>🟢 실제 작동</div>
+<div class="box"><b>2. AI 분석 규격</b><br>🟢 구현 완료<br>요약 · 중요점 · 위험도 · 불확실성 · 다음 행동을 같은 형식으로 받습니다.</div>
+<div class="box"><b>3. 안전 게이트</b><br>🟢 구현 완료<br>고위험 또는 불확실하면 송금·결제·민감정보 같은 행동을 진행시키지 않습니다.</div>
+<div class="box"><b>4. 실제 AI 서버 호출</b><br>⚪ 아직 연결 전<br>API 비밀키를 앱에 넣지 않고 HTTPS 서버를 통해 연결해야 합니다.</div>
+</section>
+
+<section id="business17" class="screen"><button class="back" onclick="go('mvpStatus')">← MVP 기준</button>
+<h1>첫 사업모델</h1>
+<div class="box"><b>🎯 첫 제품</b><br>“수상하거나 이해하기 어려운 것을 사진 한 장으로 확인하고, 지금 해야 할 행동까지 알려주는 AI 안심 확인.”</div>
+<div class="box"><b>무료가 해야 할 일</b><br>첫 3분 안에 실제 도움을 경험하게 하기</div>
+<div class="box"><b>유료 후보</b><br>가족 연결 · 동의 기반 안심 설정 · 고급 확인/이력<br><small>가격은 실제 지불의향 테스트 전에는 확정하지 않습니다.</small></div>
+<div class="box"><b>성공 지표</b><br>다운로드 수보다 “실제로 문제를 해결한 횟수”를 우선합니다.</div>
+</section>
+
+<section id="pilot18" class="screen"><button class="back" onclick="go('business17')">← 첫 사업모델</button>
+<h1>작게 검증하고 크게 키우기</h1>
+<div class="box"><b>👴 시니어 10~15명</b><br>설명 없이 사진·음성으로 실제 문제를 해결할 수 있는지 봅니다.</div>
+<div class="box"><b>👨‍👩‍👧 가족 10~15명</b><br>부모에게 실제로 보내는지, 어떤 안심 가치에 비용을 낼지 봅니다.</div>
+<div class="box"><b>통과해야 할 것</b><br>첫 문제 해결 · 위험누락 방지 · 결과 이해 · 7일 재사용 · 실제 공유 · 지불의향</div>
+<div class="box"><b>중요</b><br>“좋아요”라는 말보다 실제 행동을 봅니다.</div>
+</section>
+</main><nav class="nav"><button onclick="go('home')"><span>🏠</span>홈</button><button onclick="go('enjoy')"><span>😊</span>즐기기</button><button onclick="go('more')"><span>☰</span>생활</button><button onclick="go('family')"><span>👨‍👩‍👧</span>가족</button></nav>
+<script>function go(x){document.querySelectorAll('.screen').forEach(e=>e.classList.remove('on'));document.getElementById(x).classList.add('on');scrollTo(0,0)}function confirmIt(){go('confirm')}function showRestaurants(){document.getElementById('restaurantResults').innerHTML='<b>조건을 이렇게 이해했어요.</b><br>가까운 곳 · 한식 · 조용한 분위기<br><br><button class="action primary" onclick="go(\'restaurantDetail\')">추천 3곳 보기</button><button class="action" onclick="go(\'restaurant\')">조건 다시 고르기</button>'}
+let recognition=null;
+let lastTranscript='';
+function speechSupported(){
+  return ('SpeechRecognition' in window)||('webkitSpeechRecognition' in window);
+}
+function startSpeech(){
+  const status=document.getElementById('speechStatus');
+  const heard=document.getElementById('heardText');
+  if(!speechSupported()){
+    status.innerHTML='<b>이 브라우저에서는 바로 음성인식을 사용할 수 없어요.</b><br>Chrome 또는 Edge에서 다시 열어보세요.';
+    return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR();
+  recognition.lang='ko-KR';
+  recognition.interimResults=true;
+  recognition.continuous=false;
+  recognition.maxAlternatives=3;
+  status.innerHTML='🎙️ <b>듣고 있어요.</b><br>천천히 편하게 말씀하세요.';
+  document.getElementById('micBtn').innerHTML='⏹️ 듣는 중...';
+  recognition.onresult=function(event){
+    let interim='',finalText='';
+    for(let i=event.resultIndex;i<event.results.length;i++){
+      const t=event.results[i][0].transcript;
+      if(event.results[i].isFinal) finalText+=t; else interim+=t;
+    }
+    const shown=finalText||interim;
+    if(shown) heard.textContent=shown;
+    if(finalText) lastTranscript=finalText;
+  };
+  recognition.onerror=function(event){
+    let msg='음성인식 중 문제가 생겼어요.';
+    if(event.error==='not-allowed') msg='마이크 사용이 허용되지 않았어요. 브라우저의 마이크 권한을 허용해 주세요.';
+    if(event.error==='no-speech') msg='말씀하신 내용을 듣지 못했어요. 다시 한 번 눌러 말씀해 주세요.';
+    status.innerHTML='<b>'+msg+'</b>';
+    document.getElementById('micBtn').innerHTML='🎙️ 다시 말하기';
+  };
+  recognition.onend=function(){
+    document.getElementById('micBtn').innerHTML='🎙️ 말하기 시작';
+    if(lastTranscript){
+      status.innerHTML='제가 이렇게 들었어요. 맞는지 확인해 주세요.';
+      ['confirmSpeech','retrySpeech','fixSpeech'].forEach(id=>document.getElementById(id).style.display='block');
+      const ct=document.querySelector('#confirm .box');
+      if(ct) ct.innerHTML='제가 들은 내용:<br><b>“'+escapeHtml(lastTranscript)+'”</b>';
+    }
+  };
+  try{recognition.start()}catch(e){status.innerHTML='마이크를 다시 눌러주세요.'}
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+
+function prepareIntent(){
+  const t=(lastTranscript||document.getElementById('heardText').textContent||'').trim();
+  const box=document.getElementById('intentSummary');
+  let kind='general', label='무엇을 도와드릴지 확인할게요', detail=t;
+  if(/사기|수상|문자|안전|돈\s*보내|송금|링크/.test(t)){kind='safe';label='안전한지 확인하고 싶으시군요';}
+  else if(/맛집|식당|먹|한식|중식|일식|카페/.test(t)){kind='food';label='먹을 곳을 찾고 싶으시군요';}
+  else if(/병원|약국|정형외과|내과|치과/.test(t)){kind='medicalplace';label='병원이나 약국을 찾거나 확인하고 싶으시군요';}
+  else if(/오늘|내일|일정|약속|몇\s*시|시간/.test(t)){kind='schedule';label='일정이나 시간을 확인하고 싶으시군요';}
+  else if(/요리|해먹|반찬|레시피/.test(t)){kind='cook';label='요리 도움을 원하시는군요';}
+  else if(/가족|아들|딸|전화|연락/.test(t)){kind='family';label='가족에게 연락하고 싶으시군요';}
+  window.currentIntent={kind:kind,text:t};
+  box.innerHTML='<b>'+escapeHtml(label)+'</b><br><br>제가 들은 말:<br>“'+escapeHtml(detail)+'”<br><br>틀린 부분이 있으면 전체를 다시 말하지 않아도 됩니다.';
+  go('understand');
+}
+function runIntent(){
+  const i=window.currentIntent||{kind:'general',text:''};
+  const a=document.getElementById('intentAction');
+  const p=document.getElementById('intentPrimary');
+  if(i.kind==='safe'){a.innerHTML='<b>🛡️ 먼저 위험 신호를 확인할게요.</b><br>링크나 송금을 바로 실행하지 않고 안전 확인 화면으로 연결합니다.';p.innerHTML='수상한 내용 보여주기';p.onclick=()=>go('safe');}
+  else if(i.kind==='food'){a.innerHTML='<b>🍚 가까운 곳 중 조건에 맞는 식당을 몇 곳만 찾아볼게요.</b>';p.innerHTML='맛집 찾기';p.onclick=()=>go('restaurant');}
+  else if(i.kind==='family'){a.innerHTML='<b>👨‍👩‍👧 가족 연락 화면으로 연결할게요.</b>';p.innerHTML='가족 연락';p.onclick=()=>go('family');}
+  else if(i.kind==='cook'){a.innerHTML='<b>🍳 가지고 있는 재료나 먹고 싶은 음식을 기준으로 도와드릴게요.</b>';p.innerHTML='요리·취미 보기';p.onclick=()=>go('enjoy');}
+  else if(i.kind==='schedule'){a.innerHTML='<b>📅 말씀하신 날짜와 시간을 먼저 확인하고 일정 기능으로 연결할게요.</b>';p.innerHTML='생활 메뉴 보기';p.onclick=()=>go('more');}
+  else if(i.kind==='medicalplace'){a.innerHTML='<b>🏥 필요한 병원·약국 정보를 찾는 화면으로 연결할게요.</b>';p.innerHTML='병원·약국 찾기';p.onclick=()=>go('find');}
+  else {a.innerHTML='<b>말씀하신 내용을 바탕으로 필요한 기능을 찾아볼게요.</b>';p.innerHTML='대신 찾아줘';p.onclick=()=>go('find');}
+  go('intentResult');
+}
+
+let ttsRate=1.0, autoSpeak=false;
+function koreanVoice(){
+  const vs=window.speechSynthesis?window.speechSynthesis.getVoices():[];
+  return vs.find(v=>/^ko(-|_)/i.test(v.lang))||vs.find(v=>v.lang&&v.lang.toLowerCase().includes('ko'))||vs[0];
+}
+function speakText(text){
+  if(!('speechSynthesis' in window)){alert('이 브라우저에서는 음성 읽기를 지원하지 않습니다.');return;}
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='ko-KR'; u.rate=ttsRate; u.pitch=1;
+  const v=koreanVoice(); if(v)u.voice=v;
+  speechSynthesis.speak(u);
+}
+function speakElement(id){const e=document.getElementById(id);if(e)speakText(e.innerText);}
+function setRate(r){
+  ttsRate=r;
+  const names={0.8:'천천히',1:'보통',1.15:'조금 빠르게'};
+  const s=document.getElementById('voiceSettingStatus');
+  if(s)s.innerHTML='현재 읽기 속도: <b>'+(names[r]||r)+'</b>';
+  speakText('이 속도로 읽어드릴게요.');
+}
+function toggleAutoSpeak(){
+  autoSpeak=!autoSpeak;
+  const s=document.getElementById('voiceSettingStatus');
+  if(s)s.innerHTML='현재 읽기 속도: '+ttsRate+'<br>결과 자동 읽기: <b>'+(autoSpeak?'켜짐':'꺼짐')+'</b>';
+  speakText(autoSpeak?'앞으로 중요한 결과를 읽어드릴게요.':'자동 읽기를 끕니다.');
+}
+
+let selectedImageFile=null;
+function previewImage(ev){
+  const f=ev.target.files&&ev.target.files[0];
+  if(!f)return;
+  if(!f.type.startsWith('image/')){alert('사진 파일을 선택해 주세요.');return;}
+  if(f.size>12*1024*1024){alert('사진이 너무 커요. 12MB 이하 사진을 선택해 주세요.');return;}
+  selectedImageFile=f;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    document.getElementById('imagePreview').src=e.target.result;
+    document.getElementById('imagePreviewBox').style.display='block';
+    document.getElementById('captureNext').style.display='block';
+  };
+  reader.readAsDataURL(f);
+}
+function localAnalyze(mode){
+  const title=document.getElementById('captureAuditTitle');
+  const text=document.getElementById('captureAuditText');
+  if(!selectedImageFile){alert('먼저 사진을 찍거나 골라주세요.');return;}
+  if(mode==='safe'){
+    title.innerText='🛡️ 안전 확인';
+    text.innerHTML='<b>사진 입력까지 실제로 작동합니다.</b><br><br>하지만 아직 서버 비전 AI와 공식 위험정보 대조가 연결되지 않아 이 사진을 실제로 사기 판정하지 않습니다.<br><br><b>다음 구현:</b> 이미지 분석 → 위험 신호 추출 → 불확실성 표시 → 가족/공식 확인.';
+  }else if(mode==='screen'){
+    title.innerText='📱 화면 도움';
+    text.innerHTML='<b>스크린샷/사진 입력까지 실제로 작동합니다.</b><br><br>다음 구현에서 화면 요소를 비전 AI가 이해하고 한 번에 한 단계만 안내하도록 연결합니다.';
+  }else{
+    title.innerText='📄 쉬운 설명';
+    text.innerHTML='<b>문서/안내문 사진 입력까지 실제로 작동합니다.</b><br><br>다음 구현에서 비전 AI가 내용을 읽고 “무슨 내용 → 중요한 점 → 다음 행동” 순서로 설명합니다.';
+  }
+  go('captureAudit');
+}
+</script></body></html>

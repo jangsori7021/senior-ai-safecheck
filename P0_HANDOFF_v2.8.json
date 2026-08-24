@@ -1,0 +1,23 @@
+{
+  "version": "2.8",
+  "completed_without_external_account": [
+    "containerized backend",
+    "CORS allowlist",
+    "privacy/no-store middleware",
+    "health endpoint",
+    "multimodal provider boundary",
+    "frontend API integration",
+    "consent gate"
+  ],
+  "external_boundary_now": [
+    "choose/provide a deploy target account",
+    "set server-side OPENAI_API_KEY and OPENAI_MODEL",
+    "obtain HTTPS backend URL"
+  ],
+  "after_external_boundary": [
+    "live phone end-to-end test",
+    "evaluation batch",
+    "false-safe/latency/cost measurements"
+  ],
+  "truth_status": "deployment-ready scaffold; not live-deployed"
+}

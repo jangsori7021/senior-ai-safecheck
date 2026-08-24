@@ -1,0 +1,13 @@
+{
+  "events": [
+    "share_preview",
+    "share_confirm",
+    "family_link_open",
+    "family_install_intent",
+    "family_to_senior_invite",
+    "referred_first_solution"
+  ],
+  "attribution": "anonymous referral token; do not embed sensitive analysis text in URL",
+  "success": "공유 자체가 아니라 추천 유입 사용자가 첫 문제를 실제 해결했을 때",
+  "business_value": "organic distribution + economic buyer discovery"
+}

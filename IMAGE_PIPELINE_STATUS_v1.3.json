@@ -1,0 +1,31 @@
+{
+  "version": "1.3",
+  "real_now": [
+    "camera/file image input",
+    "image validation",
+    "local preview",
+    "mode selection"
+  ],
+  "not_real_yet": [
+    "vision analysis",
+    "OCR",
+    "scam risk analysis",
+    "screen element guidance",
+    "server upload"
+  ],
+  "next_contract": {
+    "input": [
+      "image",
+      "mode",
+      "optional voice context"
+    ],
+    "output": [
+      "summary",
+      "important_points",
+      "risk_level",
+      "uncertainty",
+      "next_actions",
+      "source_checks"
+    ]
+  }
+}

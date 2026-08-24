@@ -1,0 +1,26 @@
+{
+  "version": "2.0",
+  "interaction_model": "ONE INPUT → AI ROUTING → ONE CONCLUSION → MAX 3 REASONS → MAX 3 ACTIONS",
+  "no_mode_selection": true,
+  "senior_does_not_choose": [
+    "safe",
+    "explain",
+    "screen"
+  ],
+  "ai_routes_based_on": [
+    "image content",
+    "voice context",
+    "risk cues"
+  ],
+  "confidence_behavior": {
+    "insufficient": "unknown/caution + safe fallback",
+    "sensitive": "explicit confirmation before action"
+  },
+  "product_moat_hypothesis": [
+    "senior-specific orchestration rather than generic chatbot",
+    "failure recovery and safety behavior",
+    "family trust loop",
+    "action completion rather than information-only answers"
+  ],
+  "scope_lock": "No new consumer feature category until this loop is live and pilot-tested."
+}

@@ -1,0 +1,30 @@
+{
+  "version": "2.1",
+  "input": {
+    "image_required": false,
+    "voice_context_optional": true
+  },
+  "route_labels": [
+    "risk_check",
+    "plain_explain",
+    "screen_guidance",
+    "general_help",
+    "insufficient"
+  ],
+  "decision_rules": [
+    "If financial transfer, credential, remote-control, suspicious link, impersonation cues exist -> risk_check",
+    "If document/notice/message primarily needs interpretation -> plain_explain",
+    "If UI controls/navigation are visible and user needs operation -> screen_guidance",
+    "If evidence is insufficient -> insufficient; never fabricate"
+  ],
+  "priority": "risk_check overrides other routes",
+  "output": {
+    "route": "label",
+    "headline": "one short Korean conclusion",
+    "reasons": "max 3",
+    "actions": "max 3",
+    "risk": "unknown|low|caution|high",
+    "confidence": "0..1",
+    "needs_human_or_official_check": "boolean"
+  }
+}

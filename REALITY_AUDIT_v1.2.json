@@ -1,0 +1,72 @@
+{
+  "version": "1.2",
+  "north_star": "사진 또는 음성 한 번 → 이해 → 안전/의미/조작 도움 → 다음 행동",
+  "feature_audit": [
+    {
+      "feature": "음성 입력",
+      "current": "PARTIAL_REAL",
+      "works": "지원 브라우저의 Web Speech STT",
+      "missing": "브라우저 편차, 서버 STT, 신뢰도/후보문장"
+    },
+    {
+      "feature": "음성 읽기",
+      "current": "PARTIAL_REAL",
+      "works": "브라우저 TTS",
+      "missing": "일관된 한국어 음질, 서버/네이티브 TTS"
+    },
+    {
+      "feature": "AI 의도 이해",
+      "current": "PROTOTYPE",
+      "works": "로컬 키워드 규칙",
+      "missing": "실제 LLM/Realtime AI, 문맥·사투리·오인식 보정"
+    },
+    {
+      "feature": "이거 안전해?",
+      "current": "UX_ONLY",
+      "works": "화면 흐름",
+      "missing": "이미지/문자 분석, URL/전화/사기 신호, 공식 데이터 대조, 안전정책"
+    },
+    {
+      "feature": "이게 무슨 뜻이야?",
+      "current": "UX_ONLY",
+      "works": "3단계 설명 포맷",
+      "missing": "카메라/이미지 입력, OCR/비전 AI, 쉬운말 생성"
+    },
+    {
+      "feature": "여기서 뭘 눌러?",
+      "current": "UX_ONLY",
+      "works": "단계별 안내 UX",
+      "missing": "스크린샷 비전 분석, 화면 요소 위치 파악, 단계 추적"
+    },
+    {
+      "feature": "나에게 맞는 것만 찾아줘",
+      "current": "PROTOTYPE",
+      "works": "기능 라우팅",
+      "missing": "검색/공공/장소 커넥터, 개인화, 출처/최신성"
+    },
+    {
+      "feature": "대신 이어줘",
+      "current": "PROTOTYPE",
+      "works": "전화/길찾기/예약 버튼 UX",
+      "missing": "딥링크, 예약 파트너, 거래 추적/어트리뷰션"
+    }
+  ],
+  "build_order": [
+    "1. 카메라/이미지 입력 + 실제 비전 AI",
+    "2. AI Provider 계층 + 실제 의도/쉬운말 변환",
+    "3. 안전 분석 파이프라인과 고위험 행동 가드",
+    "4. 스크린샷 단계별 디지털 길잡이",
+    "5. 검색/공공/장소 데이터 커넥터",
+    "6. 전화/지도/가족/예약 딥링크",
+    "7. 계정·동의·분석 이벤트·결제",
+    "8. 실제 시니어 사용성 테스트와 출시 게이트"
+  ],
+  "release_gate": [
+    "핵심 기능에 UX_ONLY가 남아 있지 않음",
+    "고위험 답변에 불확실성/추가확인",
+    "첫 문제 해결 측정",
+    "음성 실패 회복",
+    "개인정보 최소수집",
+    "수익 이벤트 추적"
+  ]
+}

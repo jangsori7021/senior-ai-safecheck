@@ -1,0 +1,27 @@
+{
+  "version": "2.9",
+  "deployment_target": "Render",
+  "architecture": "single Render Docker web service; FastAPI + static frontend same origin",
+  "default_pilot_model": "gpt-5.6-terra",
+  "secret_handling": "OPENAI_API_KEY sync:false in Render Blueprint",
+  "prepared": [
+    "render.yaml",
+    "Dockerfile",
+    "same-origin frontend serving",
+    "health check",
+    "AI API",
+    "privacy consent"
+  ],
+  "requires_user_account_action": [
+    "push repository to GitHub",
+    "connect GitHub repo to Render Blueprint",
+    "enter OPENAI_API_KEY in Render dashboard"
+  ],
+  "after_deploy": [
+    "open app URL on phone",
+    "take first live image",
+    "run safety eval cases",
+    "measure false-safe/latency/cost"
+  ],
+  "truth_status": "deployment package ready; external account deployment not performed here"
+}

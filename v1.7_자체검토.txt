@@ -1,0 +1,26 @@
+v1.7 자체검토
+
+문제:
+기술 완성도만 높여도 사용자가 설치/재사용/결제하지 않으면 사업은 실패한다.
+반대로 너무 일찍 광고·제휴·결제를 넣으면 시니어 안전 앱의 신뢰가 깨진다.
+
+결정:
+첫 사업 Wedge를 'AI 안심 확인'으로 좁힌다.
+무료는 첫 성공 경험을 충분히 주고,
+유료는 공포가 아니라 가족 연결/안심/편의의 지속가치로 검증한다.
+가격은 지금 임의로 정하지 않고 실제 지불의향 데이터 후 결정한다.
+
+North Star:
+다운로드 수가 아니라 '주간 성공 해결 건수'.
+
+수익화 원칙:
+- 안전판단 결과를 돈으로 왜곡하지 않는다.
+- 제휴 추천은 제휴임을 표시한다.
+- purchase_complete까지 추적한다.
+- 자녀/가족이 경제적 구매자가 될 수 있음을 별도 퍼널로 측정한다.
+
+공통 시스템 승격 후보:
+Product Wedge Canvas
+User vs Economic Buyer 분리
+North Star + Activation + Retention + Referral + Revenue 이벤트팩
+Trust-preserving Monetization Rules

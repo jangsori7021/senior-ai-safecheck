@@ -1,0 +1,17 @@
+event,meaning
+app_open,앱 진입
+first_question_start,첫 질문 시작
+image_selected,사진 입력 성공
+voice_recognized,음성 인식 성공
+analysis_success,AI 분석 성공
+analysis_failed,AI 분석 실패
+safety_high,고위험 결과
+user_helpful_yes,도움 됨
+user_helpful_no,도움 안 됨
+next_action_click,다음 행동 클릭
+family_share,가족 공유
+referral_open,추천 링크 유입
+premium_view,유료 가치 화면
+price_exposed,가격 노출
+purchase_start,결제 시작
+purchase_complete,결제 완료

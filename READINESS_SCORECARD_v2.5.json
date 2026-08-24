@@ -1,0 +1,63 @@
+{
+  "version": "2.5",
+  "status": "PRE-PILOT",
+  "dimensions": [
+    {
+      "name": "핵심 UX",
+      "score": 8,
+      "out_of": 10,
+      "evidence": "One Input, max-3 result/actions, failure recovery, family consent UX"
+    },
+    {
+      "name": "실제 입력",
+      "score": 7,
+      "out_of": 10,
+      "evidence": "camera/file input real; browser STT/TTS partial real"
+    },
+    {
+      "name": "실제 AI 분석",
+      "score": 3,
+      "out_of": 10,
+      "evidence": "backend/provider code exists but live credential/model not configured or verified"
+    },
+    {
+      "name": "안전성",
+      "score": 6,
+      "out_of": 10,
+      "evidence": "schema/safety gate/eval plan exists; real model false-safe not yet measured"
+    },
+    {
+      "name": "공식정보 검증",
+      "score": 2,
+      "out_of": 10,
+      "evidence": "connector interface only"
+    },
+    {
+      "name": "개인정보",
+      "score": 5,
+      "out_of": 10,
+      "evidence": "privacy defaults defined; production policy/consent/storage implementation pending"
+    },
+    {
+      "name": "성장/수익",
+      "score": 6,
+      "out_of": 10,
+      "evidence": "family/referral/revenue hypotheses and analytics defined; no live behavioral data"
+    },
+    {
+      "name": "실사용 검증",
+      "score": 1,
+      "out_of": 10,
+      "evidence": "pilot plan exists; no observed users yet"
+    }
+  ],
+  "hard_blockers": [
+    "staging HTTPS backend deployment",
+    "valid multimodal AI provider configuration",
+    "end-to-end camera→AI→result integration",
+    "real evaluation images + false-safe measurement",
+    "privacy/consent copy and retention implementation",
+    "small real-user pilot"
+  ],
+  "rule": "No claim of launch readiness until all hard blockers are cleared."
+}

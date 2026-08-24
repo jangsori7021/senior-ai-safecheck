@@ -1,0 +1,23 @@
+v1.4 자체검토
+
+완료:
+- AI 공급자를 앱 화면과 분리하는 Provider Boundary
+- 이미지 분석 표준 JSON Schema
+- 위험도: unknown/low/caution/high + confidence
+- 불확실성 필드
+- 다음 행동은 최대 4개로 제한
+- 고위험/불확실 결과에서 민감 행동을 차단하는 Safety Gate
+- 실제 서버 API 계약 정의
+
+중요 판단:
+API 키를 HTML/JavaScript에 직접 넣는 방식은 배포하면 키가 노출되므로 채택하지 않는다.
+실제 AI 호출은 HTTPS 백엔드를 통해서만 연결한다.
+
+현재 Reality Status:
+REAL: 사진 입력/미리보기, 브라우저 STT/TTS
+IMPLEMENTED CONTRACT: AI Provider/Schema/Safety Gate/API 규격
+NOT CONNECTED: 실제 멀티모달 AI 서버 호출
+
+다음:
+백엔드 런타임을 선택한 뒤 실제 provider 호출을 구현하고,
+테스트 이미지 세트로 안전/설명/화면도움 결과를 평가해야 한다.

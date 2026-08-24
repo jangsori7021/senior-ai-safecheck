@@ -1,0 +1,35 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI 안심 확인 v2.0</title><style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;color:#161616;background:#fff}
+main{max-width:520px;margin:auto;padding:22px 18px 40px}.brand{font-size:18px;font-weight:900}.screen{display:none}.screen.on{display:block}
+h1{font-size:32px;line-height:1.25;margin:22px 0 10px}.lead{font-size:21px;line-height:1.5;color:#444;margin:0 0 24px}
+.btn{width:100%;min-height:92px;border:2px solid #1d1d1d;border-radius:22px;background:white;padding:18px;margin:0 0 14px;text-align:left;font-size:25px;font-weight:850}
+.btn small{display:block;font-size:17px;font-weight:500;margin-top:7px;color:#555}.dark{background:#171717;color:white}.dark small{color:#eee}
+.box{border-radius:20px;background:#f4f4f4;padding:20px;margin:15px 0;font-size:20px;line-height:1.55}.danger{border:3px solid #222;background:#fff}
+.action{width:100%;min-height:66px;border:0;border-radius:18px;background:#171717;color:white;font-size:21px;font-weight:850;margin:8px 0}
+.alt{background:#eee;color:#171717}.back{border:0;background:none;font-size:18px;padding:8px 0}.note{font-size:15px;color:#666;line-height:1.5;margin-top:20px}
+</style></head><body><main><div class="brand">AI 안심 확인</div>
+<section id="home" class="screen on"><h1>걱정되는 게 있으세요?</h1><p class="lead">그냥 보여주시거나 말씀해 주세요.<br>제가 먼저 살펴볼게요.</p>
+<label class="btn dark">📷 보여주세요<small>문자 · 안내문 · 스마트폰 화면</small><input id="photo" hidden type="file" accept="image/*" capture="environment" onchange="picked(this)"></label>
+<button class="btn" onclick="voiceDemo()">🎙️ 말씀하세요<small>궁금한 걸 편하게 말해요</small></button>
+<button class="action alt" onclick="show('family')">👨‍👩‍👧 가족에게 도움받기</button></section>
+
+<section id="thinking" class="screen"><button class="back" onclick="show('home')">← 다시</button><h1>제가 살펴볼게요</h1>
+<div class="box">사진을 받았어요.<br><b>무엇인지 먼저 확인하는 중...</b></div><button class="action" onclick="show('result')">데모 결과 보기</button>
+<div class="note">현재 이 미리보기의 분석 결과는 UX 데모입니다. 실제 AI 서버 연결 후 진짜 분석 결과로 교체됩니다.</div></section>
+
+<section id="result" class="screen"><button class="back" onclick="show('home')">← 홈</button><h1>지금은 누르지 마세요</h1>
+<div class="box danger"><b>⚠️ 조금 더 확인하는 게 좋아요.</b><br><br>이 화면만으로 확실히 판단하기 어려운 부분이 있습니다.</div>
+<div class="box"><b>왜 그런가요?</b><br>• 돈이나 개인정보를 요구하는지 확인이 필요해요.<br>• 보낸 곳이 정말 공식 기관인지 다시 확인해야 해요.</div>
+<div class="box"><b>지금 할 일</b><br>① 링크를 누르지 않기<br>② 돈을 보내지 않기<br>③ 공식 연락처나 가족에게 확인하기</div>
+<button class="action">👨‍👩‍👧 가족에게 보여주기</button><button class="action alt">☎️ 공식 연락처 확인하기</button>
+<div class="note">AI가 확실하지 않을 때는 안전하다고 단정하지 않습니다.</div></section>
+
+<section id="family" class="screen"><button class="back" onclick="show('home')">← 홈</button><h1>가족에게 도움받기</h1>
+<p class="lead">혼자 해결하기 어려우면 결과나 사진을 가족에게 보여줄 수 있어요.</p><button class="action">가족에게 보내기</button>
+<div class="note">실제 공유 기능은 개인정보 동의와 공유 범위를 확인한 뒤 연결합니다.</div></section>
+</main><script>
+function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('on'));document.getElementById(id).classList.add('on')}
+function picked(i){if(i.files&&i.files[0])show('thinking')}
+function voiceDemo(){alert('음성은 기존 STT 프로토타입과 실제 AI 서버를 통합하는 단계입니다.')}
+</script></body></html>

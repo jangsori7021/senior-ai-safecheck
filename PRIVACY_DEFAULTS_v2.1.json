@@ -1,0 +1,9 @@
+{
+  "default": "ephemeral processing",
+  "image_storage": "off by default",
+  "history": "opt-in only",
+  "family_sharing": "per-event explicit user action by default",
+  "sensitive_actions": "explicit confirmation",
+  "telemetry": "store event metadata needed for quality; avoid raw image/text unless separately consented",
+  "deletion": "provide easy delete when history is enabled"
+}

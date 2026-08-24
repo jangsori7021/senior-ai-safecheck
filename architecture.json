@@ -1,0 +1,49 @@
+{
+  "version": "0.4",
+  "core_modules": [
+    {
+      "id": "ai_router",
+      "role": "사용자의 버튼/음성 요청을 적절한 기능으로 연결",
+      "promotion_candidate": true
+    },
+    {
+      "id": "voice_confirm",
+      "role": "음성 인식 결과 재확인·재말하기·부분수정",
+      "promotion_candidate": true
+    },
+    {
+      "id": "easy_explain",
+      "role": "AI 결과를 큰 글씨와 쉬운 말, 다음 행동으로 변환",
+      "promotion_candidate": true
+    },
+    {
+      "id": "personal_memory",
+      "role": "취향·일정·반복 요청을 동의 기반으로 기억",
+      "promotion_candidate": true
+    },
+    {
+      "id": "family_link",
+      "role": "시니어-가족 연결 및 도움 요청",
+      "promotion_candidate": true
+    },
+    {
+      "id": "service_connector",
+      "role": "외부 예약·구매·기관 서비스 연결",
+      "promotion_candidate": true
+    }
+  ],
+  "custom_domains": [
+    "문자/사진 이해",
+    "생활정보 탐색",
+    "맛집/나들이",
+    "요리/취미",
+    "가족",
+    "일정"
+  ],
+  "principles": [
+    "홈은 단순 유지",
+    "음성만 강요하지 않음",
+    "AI 확신이 낮으면 재확인",
+    "제휴보다 사용자 적합성 우선"
+  ]
+}

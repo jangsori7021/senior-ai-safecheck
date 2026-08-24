@@ -1,0 +1,43 @@
+{
+  "version": "2.4",
+  "principle": "AI의 결론보다 사용자가 '왜 그렇게 말했는지' 이해하고 안전한 행동을 할 수 있어야 한다.",
+  "result_layers": [
+    {
+      "order": 1,
+      "name": "headline",
+      "rule": "한 문장, 행동 중심"
+    },
+    {
+      "order": 2,
+      "name": "risk_badge",
+      "rule": "위험/주의/확인필요/뚜렷한위험적음"
+    },
+    {
+      "order": 3,
+      "name": "evidence",
+      "rule": "사진에서 실제로 관찰한 근거 최대 3개"
+    },
+    {
+      "order": 4,
+      "name": "uncertainty",
+      "rule": "모르는 부분을 숨기지 않음"
+    },
+    {
+      "order": 5,
+      "name": "actions",
+      "rule": "지금 할 일 최대 3개"
+    },
+    {
+      "order": 6,
+      "name": "official_check",
+      "rule": "가능하면 사용자가 받은 링크/번호와 독립된 공식 채널로 확인"
+    }
+  ],
+  "language_rules": [
+    "100% 안전/확실 표현 금지",
+    "AI confidence 숫자를 시니어에게 그대로 노출하지 않음",
+    "내부 confidence는 안전 분기에 사용",
+    "근거와 추론을 구분",
+    "광고/제휴 추천은 안전판정 근거로 사용하지 않음"
+  ]
+}

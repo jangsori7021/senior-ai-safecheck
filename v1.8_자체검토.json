@@ -1,0 +1,10 @@
+{
+  "version": "1.8",
+  "self_review": "이 시점의 최대 위험은 기능 부족이 아니라 실제 사용자 없이 내부 논리만 정교해지는 것",
+  "decision": "실제 AI 연결과 병행해 소규모 파일럿 설계를 출시 프로세스에 포함",
+  "common_system_candidates": [
+    "Two-sided user test (user/economic buyer)",
+    "No-explanation usability test",
+    "Pilot gate before scale"
+  ]
+}

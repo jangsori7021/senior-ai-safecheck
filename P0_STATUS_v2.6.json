@@ -1,0 +1,26 @@
+{
+  "version": "2.6",
+  "p0_progress": {
+    "camera_to_frontend": "REAL",
+    "frontend_to_api": "IMPLEMENTED_NOT_LIVE_VERIFIED",
+    "timeout_recovery": "IMPLEMENTED",
+    "server_error_recovery": "IMPLEMENTED",
+    "structured_result_renderer": "IMPLEMENTED",
+    "live_multimodal_analysis": "BLOCKED_BY_DEPLOYMENT_AND_SERVER_CREDENTIAL",
+    "privacy_production_controls": "PENDING"
+  },
+  "newly_completed": [
+    "consumer pilot UI calls /api/v1/analyze-image",
+    "20 second timeout and friendly retry",
+    "HTTP/provider failure mapped to senior-friendly recovery",
+    "real API payload rendered as headline/reasons/uncertainty/actions",
+    "no fake fallback result"
+  ],
+  "remaining_p0": [
+    "deploy backend over HTTPS",
+    "configure valid server-side multimodal provider",
+    "verify end-to-end on real phone",
+    "implement production consent/retention controls",
+    "run safety evaluation set"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "version": "2.7",
+  "defaults": {
+    "raw_image_persistence": false,
+    "analysis_history": false,
+    "family_auto_share": false,
+    "quality_telemetry": true
+  },
+  "consent": {
+    "required_before_first_analysis": true,
+    "plain_language": true,
+    "separate_optional_history": true,
+    "separate_family_share": true
+  },
+  "retention": {
+    "raw_image": "request lifetime only by default",
+    "analysis_text": "not persisted by default",
+    "telemetry": "event metadata only; no raw image"
+  },
+  "user_controls": [
+    "history opt-in",
+    "delete saved history",
+    "share per event"
+  ],
+  "safety": "consent never weakens Safety Gate"
+}

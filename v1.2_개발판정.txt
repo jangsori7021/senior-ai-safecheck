@@ -1,0 +1,23 @@
+v1.2 개발 판정
+
+핵심 발견:
+현재 제품은 '실제 작동 MVP'가 아니라 일부 실제 기능(STT/TTS) + 다수 UX 프로토타입이다.
+이 상태에서 기능을 더 추가하면 데모는 풍부해지지만 출시 가능성은 오히려 늦어진다.
+
+따라서 v1.2부터 원칙 변경:
+- 새 메뉴 추가보다 핵심 4개를 진짜로 작동시키는 데 우선순위.
+- 화면에 있는 기능은 REAL / PARTIAL_REAL / PROTOTYPE / UX_ONLY로 상태 관리.
+- 안전 기능은 일반 AI 답변보다 별도 검증·가드레일 적용.
+- 외부 공급자/API는 교체 가능한 커넥터로 연결.
+- 수익 기능은 클릭이 아니라 transaction_complete까지 추적.
+
+첫 실제 개발 순서:
+카메라/이미지 → 비전 AI → 쉬운말 → 안전 분기 → 다음 행동.
+이 한 파이프라인이 완성되면
+'이거 안전해?', '이게 무슨 뜻이야?', '여기서 뭘 눌러?' 세 기능이 공통 기반을 공유한다.
+
+공통 앱 제작 시스템 승격 후보:
+기능 Reality Status 관리(REAL/PARTIAL_REAL/PROTOTYPE/UX_ONLY)
+Release Gate
+AI Provider/External Connector 분리
+고위험 기능 Safety Pipeline

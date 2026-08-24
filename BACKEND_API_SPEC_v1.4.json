@@ -1,0 +1,32 @@
+{
+  "endpoint": "POST /api/v1/analyze-image",
+  "transport": "HTTPS multipart/form-data",
+  "request": {
+    "image": "binary image",
+    "mode": "safe|explain|screen",
+    "voice_context": "optional string"
+  },
+  "server_steps": [
+    "authenticate/rate-limit if applicable",
+    "validate MIME and byte size",
+    "strip/handle metadata per policy",
+    "invoke configured multimodal AI provider",
+    "force structured output",
+    "validate schema",
+    "apply safety gate",
+    "return senior-friendly structured result",
+    "log only permitted telemetry"
+  ],
+  "never_client_side": [
+    "provider secret keys",
+    "safety bypass rules",
+    "payment/transfer execution"
+  ],
+  "failure_codes": [
+    "UNSUPPORTED_IMAGE",
+    "IMAGE_TOO_LARGE",
+    "AI_TIMEOUT",
+    "INVALID_AI_OUTPUT",
+    "SAFETY_REVIEW_REQUIRED"
+  ]
+}

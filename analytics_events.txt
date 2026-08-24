@@ -1,0 +1,26 @@
+시니어 AI 생활 플랫폼 v0.4 - 핵심 측정 이벤트
+app_open              앱 실행
+home_action_click      홈 핵심 버튼 클릭
+voice_start            음성 입력 시작
+voice_confirm          AI 이해 내용 확인
+voice_retry            다시 말하기
+voice_partial_edit     일부 수정
+ai_answer_shown        AI 답변 표시
+problem_resolved       사용자가 해결됐다고 확인
+family_invite          가족 초대
+family_connected       가족 연결 완료
+recommendation_shown   맛집/여행/취미/상품 추천 노출
+partner_click          제휴 서비스 이동
+booking_started        예약 시작
+purchase_started       구매 시작
+transaction_complete   거래 완료
+premium_view           유료 기능 안내
+subscription_started   구독 시작
+subscription_renewed   구독 갱신
+
+필수 속성 예시:
+user_id(익명화), session_id, source, feature, partner_id, transaction_value,
+commission_value, ai_confidence, resolved, timestamp
+
+핵심 퍼널:
+유입 → 첫 AI 사용 → 문제 해결 → 7일 재방문 → 가족 연결 → 거래/구독 → 재구매/갱신

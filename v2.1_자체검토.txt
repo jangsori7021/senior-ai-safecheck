@@ -1,0 +1,23 @@
+v2.1 자체검토
+
+핵심:
+v2.0에서 사용자가 기능을 고르지 않는 One Input UX를 정했다.
+v2.1에서는 AI 내부에서 어떤 기준으로 자동 분류할지 계약을 고정했다.
+
+중요한 결정:
+- 위험 신호가 있으면 다른 설명 기능보다 risk_check가 우선.
+- 근거 부족은 별도 insufficient 상태로 처리.
+- '모르겠다'를 제품 실패가 아니라 안전 기능으로 인정.
+- 사진은 기본적으로 영구 저장하지 않는 방향.
+- 가족 공유는 기본 자동전송이 아니라 사용자 행동 기반.
+- 기록 기능은 opt-in 후보.
+
+사업 관점:
+가족 안심을 만들기 위해 부모의 사생활을 과도하게 수집하면 오히려 신뢰를 잃는다.
+따라서 '보호'와 '감시'를 구분하는 것이 제품 차별화 요소가 될 수 있다.
+
+공통 시스템 승격 후보:
+Risk-priority Auto Router
+Insufficient-as-valid-state
+Privacy-by-default AI Input Policy
+Explicit-share Family Loop

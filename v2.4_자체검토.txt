@@ -1,0 +1,23 @@
+v2.4 자체검토
+
+발견:
+'위험해요/안전해요'만 보여주면 사용자는 AI를 맹신하거나 반대로 신뢰하지 않을 수 있다.
+특히 시니어 안전 제품에서는 결론의 근거와 모르는 부분을 분리해야 한다.
+
+개선:
+- 사진에서 관찰한 근거 최대 3개
+- 불확실성 별도 표시
+- 행동 최대 3개
+- 내부 confidence 숫자는 사용자에게 그대로 노출하지 않음
+- 공식 확인은 수상한 메시지에 적힌 연락처와 독립된 채널을 원칙으로 함
+- official-check connector 인터페이스 추가
+
+사업 관점:
+'정답을 말하는 AI'보다 '근거를 쉽게 보여주고 안전한 행동으로 연결하는 AI'가
+신뢰/추천/유료 전환에서 더 지속 가능한 제품 가설.
+
+공통 시스템 승격 후보:
+Evidence-first Result Renderer
+Uncertainty Layer
+Independent Official Verification Connector
+Trust/Monetization Separation

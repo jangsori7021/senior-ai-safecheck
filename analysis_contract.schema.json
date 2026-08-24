@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SeniorAIAnalysis",
+  "type": "object",
+  "required": [
+    "mode",
+    "summary",
+    "important_points",
+    "risk",
+    "next_actions"
+  ],
+  "properties": {
+    "mode": {
+      "enum": [
+        "safe",
+        "explain",
+        "screen"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "important_points": {
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "type": "string",
+        "maxLength": 220
+      }
+    },
+    "risk": {
+      "type": "object",
+      "required": [
+        "level",
+        "confidence",
+        "reasons"
+      ],
+      "properties": {
+        "level": {
+          "enum": [
+            "unknown",
+            "low",
+            "caution",
+            "high"
+          ]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "reasons": {
+          "type": "array",
+          "maxItems": 5,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "uncertainty": {
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_actions": {
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "required": [
+          "type",
+          "label",
+          "requires_confirmation"
+        ],
+        "properties": {
+          "type": {
+            "enum": [
+              "none",
+              "family",
+              "official_check",
+              "call",
+              "map",
+              "calendar",
+              "retry"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "requires_confirmation": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

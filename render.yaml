@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: senior-ai-safecheck-pilot
+    runtime: docker
+    rootDir: backend
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-5.6-terra
+      - key: MAX_IMAGE_BYTES
+        value: "12582912"
+      - key: ALLOWED_ORIGINS
+        value: ""

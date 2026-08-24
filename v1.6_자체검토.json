@@ -1,0 +1,11 @@
+{
+  "version": "1.6",
+  "decision": "기능 추가 중지, 안전 품질 검증을 출시 게이트로 격상",
+  "primary_metric": "false-safe rate",
+  "test_cases": 20,
+  "common_system_candidates": [
+    "AI eval harness",
+    "risk-weighted release gate",
+    "failure-condition test matrix"
+  ]
+}
