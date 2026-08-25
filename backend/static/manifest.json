@@ -1,13 +1,15 @@
 {
   "name": "시니어 AI 생활 도우미",
   "short_name": "시니어 AI",
-  "description": "사진, 음성, 맛집, 길찾기, 건강생활과 가족 도움을 쉽게 연결하는 시니어 생활 AI",
+  "description": "말과 사진으로 생활의 궁금한 점을 쉽게 해결하는 시니어 AI 생활 도우미",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#f5f8fb",
-  "theme_color": "#16324f",
+  "background_color": "#f7f8f3",
+  "theme_color": "#426b67",
   "lang": "ko-KR",
   "orientation": "portrait-primary",
-  "icons": [{"src":"/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+  "icons": [
+    {"src":"/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
 }
