@@ -25,6 +25,7 @@ class PrivacyHeadersMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(PrivacyHeadersMiddleware)
 MAX_BYTES=int(os.getenv("MAX_IMAGE_BYTES","12582912"))
+DEFAULT_MODEL="gpt-5.6-terra"
 
 class Risk(BaseModel):
     level: Literal["unknown","low","caution","high"]="unknown"
@@ -53,7 +54,9 @@ def safety_gate(x: Analysis):
 
 @app.get("/health")
 def health():
-    return {"ok":True,"provider_configured":bool(os.getenv("OPENAI_API_KEY"))}
+    key_configured=bool(os.getenv("OPENAI_API_KEY"))
+    model=os.getenv("OPENAI_MODEL", DEFAULT_MODEL).strip() or DEFAULT_MODEL
+    return {"ok":True,"provider_configured":key_configured,"model":model}
 
 @app.get("/", include_in_schema=False)
 def app_home():
@@ -72,8 +75,8 @@ async def analyze_image(image: UploadFile=File(...),
         raise HTTPException(415,"UNSUPPORTED_IMAGE")
 
     key=os.getenv("OPENAI_API_KEY")
-    model=os.getenv("OPENAI_MODEL")
-    if not key or not model:
+    model=os.getenv("OPENAI_MODEL", DEFAULT_MODEL).strip() or DEFAULT_MODEL
+    if not key:
         raise HTTPException(503,"AI_PROVIDER_NOT_CONFIGURED")
 
     mime=image.content_type if image.content_type in {"image/jpeg","image/png","image/webp"} else "image/jpeg"
