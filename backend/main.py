@@ -7,7 +7,6 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from PIL import Image
 from openai import OpenAI
-
 app=FastAPI(title="Senior AI Life Assistant",version="3.1")
 origins=[x.strip() for x in os.getenv("ALLOWED_ORIGINS","").split(",") if x.strip()]
 if origins: app.add_middleware(CORSMiddleware,allow_origins=origins,allow_credentials=False,allow_methods=["GET","POST"],allow_headers=["*"])
@@ -23,7 +22,6 @@ class Action(BaseModel):
 class Analysis(BaseModel):
  mode:Literal["safe","explain","screen"]="safe";summary:str="사진을 확인했습니다.";important_points:List[str]=Field(default_factory=list,max_length=5);risk:Risk=Field(default_factory=Risk);uncertainty:List[str]=Field(default_factory=list,max_length=5);next_actions:List[Action]=Field(default_factory=list,max_length=4)
 class AskRequest(BaseModel): question:str
-
 def _client():
  key=os.getenv("OPENAI_API_KEY");model=os.getenv("OPENAI_MODEL",DEFAULT_MODEL).strip() or DEFAULT_MODEL
  if not key: raise HTTPException(503,"AI_PROVIDER_NOT_CONFIGURED")
@@ -57,29 +55,26 @@ def safety_gate(x):
 def health():
  key=bool(os.getenv("OPENAI_API_KEY"));model=os.getenv("OPENAI_MODEL",DEFAULT_MODEL).strip() or DEFAULT_MODEL;return {"ok":True,"provider_configured":key,"model":model,"version":"3.1"}
 @app.get("/",include_in_schema=False)
-def app_home():return FileResponse("static/index.html")
+def app_home():return FileResponse("static/v31.html")
 @app.post("/api/v1/ask")
 def ask(req:AskRequest):
  q=req.question.strip()
  if not q:raise HTTPException(400,"EMPTY_QUESTION")
- client,model=_client()
- prompt='''너는 한국의 시니어를 돕는 친절한 생활 AI다. 사용자가 스마트폰에 익숙하지 않을 수 있다. 반드시 한국어로, 존댓말로, 쉽고 짧게 답한다. 먼저 핵심 답을 1~2문장으로 말하고, 필요하면 지금 할 일을 최대 3단계로 설명한다. 전문용어는 피한다. 의료·법률·금융처럼 중요한 문제는 단정하지 말고 전문가나 공식기관 확인이 필요한 때를 분명히 알려라. 사용자가 사기나 송금, 비밀번호, 인증번호와 관련된 내용을 말하면 행동을 서두르지 말고 공식 연락처나 가족에게 확인하도록 안내한다. 맛집·영업시간·교통·날씨처럼 실시간 정보가 필요한 질문에는 네 지식만으로 현재 사실을 꾸며내지 말고, 앱의 주변찾기/길찾기 기능을 이용하도록 짧게 안내한다.'''
+ client,model=_client();prompt='''너는 한국의 시니어를 돕는 친절한 생활 AI다. 반드시 한국어 존댓말로 쉽고 짧게 답한다. 먼저 핵심을 1~2문장으로 말하고 필요하면 지금 할 일을 최대 3단계로 설명한다. 전문용어는 피한다. 의료·법률·금융은 단정하지 말고 전문가나 공식기관 확인이 필요한 때를 분명히 알려라. 사기·송금·비밀번호·인증번호 관련이면 행동을 서두르지 말고 공식 연락처나 가족에게 확인하도록 안내한다. 실시간 정보는 꾸며내지 않는다.'''
  try:
   r=client.responses.create(model=model,input=[{"role":"system","content":[{"type":"input_text","text":prompt}]},{"role":"user","content":[{"type":"input_text","text":q}]}]);return {"answer":r.output_text.strip()}
- except Exception as e:
-  detail=str(e).replace("\n"," ")[:800];print(f"AI_ASK_ERROR:{type(e).__name__}:{detail}",flush=True);raise HTTPException(502,"AI_ASK_FAILED")
+ except Exception as e: print(f"AI_ASK_ERROR:{type(e).__name__}:{str(e)[:800]}",flush=True);raise HTTPException(502,"AI_ASK_FAILED")
 @app.post("/api/v1/analyze-image")
 async def analyze_image(image:UploadFile=File(...),mode:Literal["safe","explain","screen"]=Form(...),voice_context:str=Form("")):
  raw=await image.read()
  if not raw or len(raw)>MAX_BYTES:raise HTTPException(413,"IMAGE_TOO_LARGE")
  try:im=Image.open(io.BytesIO(raw));im.verify()
  except:raise HTTPException(415,"UNSUPPORTED_IMAGE")
- client,model=_client();mime=image.content_type if image.content_type in {"image/jpeg","image/png","image/webp"} else "image/jpeg";data=base64.b64encode(raw).decode()
- prompt=f'''You analyze an image for a Korean senior-assistance app. Mode: {mode}. Context: {voice_context}\nReturn ONLY one JSON object. Use simple Korean. Required shape exactly: {{"mode":"{mode}","summary":"...","important_points":["..."],"risk":{{"level":"unknown|low|caution|high","confidence":0.0,"reasons":["..."]}},"uncertainty":["..."],"next_actions":[{{"type":"none|family|official_check|call|map|calendar|retry","label":"...","requires_confirmation":true}}]}}. Arrays must be arrays. risk.level must be exact. No markdown. Never claim certainty when evidence is insufficient.'''
+ client,model=_client();mime=image.content_type if image.content_type in {"image/jpeg","image/png","image/webp"} else "image/jpeg";data=base64.b64encode(raw).decode();prompt=f'''You analyze an image for a Korean senior-assistance app. Mode: {mode}. Context: {voice_context}\nReturn ONLY JSON: {{"mode":"{mode}","summary":"...","important_points":["..."],"risk":{{"level":"unknown|low|caution|high","confidence":0.0,"reasons":["..."]}},"uncertainty":["..."],"next_actions":[{{"type":"none|family|official_check|call|map|calendar|retry","label":"...","requires_confirmation":true}}]}}. Use simple Korean. Never claim certainty when evidence is insufficient.'''
  try:
   resp=client.responses.create(model=model,input=[{"role":"user","content":[{"type":"input_text","text":prompt},{"type":"input_image","image_url":f"data:{mime};base64,{data}"}]}]);text=(resp.output_text or "").strip()
   if text.startswith("```"):
    lines=text.splitlines()[1:];lines=lines[:-1] if lines and lines[-1].strip()=="```" else lines;text="\n".join(lines).strip()
   return safety_gate(normalize(json.loads(text),mode))
  except json.JSONDecodeError as e:print(f"AI_OUTPUT_ERROR:{e}",flush=True);raise HTTPException(502,"INVALID_AI_JSON")
- except Exception as e:detail=str(e).replace("\n"," ")[:1000];print(f"AI_PROVIDER_ERROR:{type(e).__name__}:{detail}",flush=True);raise HTTPException(502,"AI_PROVIDER_ERROR")
+ except Exception as e:print(f"AI_PROVIDER_ERROR:{type(e).__name__}:{str(e)[:1000]}",flush=True);raise HTTPException(502,"AI_PROVIDER_ERROR")
