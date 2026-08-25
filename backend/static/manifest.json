@@ -1,20 +1,13 @@
 {
-  "name": "시니어 AI 안심 확인",
-  "short_name": "AI 안심 확인",
-  "description": "사진 한 장으로 문자, 화면, 안내문과 위험 신호를 쉽게 확인하는 시니어 AI 도우미",
+  "name": "시니어 AI 생활 도우미",
+  "short_name": "시니어 AI",
+  "description": "사진, 음성, 맛집, 길찾기, 건강생활과 가족 도움을 쉽게 연결하는 시니어 생활 AI",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#f8fbff",
-  "theme_color": "#0f172a",
+  "background_color": "#f5f8fb",
+  "theme_color": "#16324f",
   "lang": "ko-KR",
   "orientation": "portrait-primary",
-  "icons": [
-    {
-      "src": "/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
-  ]
+  "icons": [{"src":"/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
 }
