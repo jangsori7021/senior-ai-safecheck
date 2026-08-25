@@ -3,16 +3,17 @@
   "name": "시니어 AI 생활 도우미",
   "short_name": "시니어 AI",
   "description": "말과 사진으로 생활의 궁금한 점을 쉽게 해결하는 시니어 AI 생활 도우미",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#f7f8f3",
-  "theme_color": "#426b67",
+  "background_color": "#f6f8f5",
+  "theme_color": "#365f63",
   "lang": "ko-KR",
   "orientation": "portrait-primary",
   "prefer_related_applications": false,
   "icons": [
-    {"src":"/icon.svg?v=20260826-1","sizes":"any","type":"image/svg+xml","purpose":"any"},
-    {"src":"/icon.svg?v=20260826-1","sizes":"any","type":"image/svg+xml","purpose":"maskable"}
+    {"src":"/icon.svg?v=20260826-2","sizes":"192x192","type":"image/svg+xml","purpose":"any"},
+    {"src":"/icon.svg?v=20260826-2","sizes":"512x512","type":"image/svg+xml","purpose":"any"},
+    {"src":"/icon.svg?v=20260826-2","sizes":"512x512","type":"image/svg+xml","purpose":"maskable"}
   ]
 }
