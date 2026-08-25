@@ -3,9 +3,8 @@ from typing import Literal, List
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 from PIL import Image
 from openai import OpenAI
 
@@ -83,13 +82,15 @@ async def analyze_image(image: UploadFile=File(...),
     data=base64.b64encode(raw).decode()
     prompt=f"""You are the analysis engine for a Korean senior-assistance app.
 Mode: {mode}. Optional user context: {voice_context}
-Return ONLY JSON matching these fields:
+Return ONLY valid JSON matching exactly these fields:
 mode, summary, important_points, risk{{level,confidence,reasons}},
 uncertainty, next_actions[{{type,label,requires_confirmation}}].
+Allowed next_actions.type values: none, family, official_check, call, map, calendar, retry.
 Use Korean. Never claim certainty when evidence is insufficient.
 For safe mode, do not declare a message definitely safe merely from an image.
 For screen mode, give only the next simple step.
 For explain mode, explain: what it is, what matters, what to do next.
+Do not use markdown fences around the JSON.
 """
     client=OpenAI(api_key=key)
     try:
@@ -100,10 +101,18 @@ For explain mode, explain: what it is, what matters, what to do next.
                 {"type":"input_image","image_url":f"data:{mime};base64,{data}"}
             ]}]
         )
-        text=resp.output_text
+        text=(resp.output_text or "").strip()
+        if text.startswith("```"):
+            lines=text.splitlines()
+            if lines and lines[0].startswith("```"): lines=lines[1:]
+            if lines and lines[-1].strip()=="```": lines=lines[:-1]
+            text="\n".join(lines).strip()
         parsed=Analysis.model_validate(json.loads(text))
         return safety_gate(parsed)
-    except json.JSONDecodeError:
-        raise HTTPException(502,"INVALID_AI_OUTPUT")
+    except (json.JSONDecodeError, ValidationError) as e:
+        print(f"AI_OUTPUT_ERROR:{type(e).__name__}:{str(e)[:1000]}", flush=True)
+        raise HTTPException(502,f"INVALID_AI_OUTPUT:{type(e).__name__}")
     except Exception as e:
-        raise HTTPException(502,f"AI_PROVIDER_ERROR:{type(e).__name__}")
+        detail=str(e).replace("\n"," ")[:1200]
+        print(f"AI_PROVIDER_ERROR:{type(e).__name__}:{detail}", flush=True)
+        raise HTTPException(502,f"AI_PROVIDER_ERROR:{type(e).__name__}:{detail}")
