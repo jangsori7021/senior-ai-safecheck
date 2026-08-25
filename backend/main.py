@@ -24,7 +24,7 @@ class PrivacyHeadersMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(PrivacyHeadersMiddleware)
 MAX_BYTES=int(os.getenv("MAX_IMAGE_BYTES","12582912"))
-DEFAULT_MODEL="gpt-5.6-terra"
+DEFAULT_MODEL="gpt-4.1-mini"
 
 class Risk(BaseModel):
     level: Literal["unknown","low","caution","high"]="unknown"
