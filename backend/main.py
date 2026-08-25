@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from PIL import Image
 from openai import OpenAI
 
-app=FastAPI(title="Senior AI Life Assistant",version="3.1")
+app=FastAPI(title="Senior AI Life Assistant",version="3.3")
 origins=[x.strip() for x in os.getenv("ALLOWED_ORIGINS","").split(",") if x.strip()]
 if origins: app.add_middleware(CORSMiddleware,allow_origins=origins,allow_credentials=False,allow_methods=["GET","POST"],allow_headers=["*"])
 
@@ -68,36 +68,19 @@ def safety_gate(x):
 @app.get("/health")
 def health():
  key=bool(os.getenv("OPENAI_API_KEY"));model=os.getenv("OPENAI_MODEL",DEFAULT_MODEL).strip() or DEFAULT_MODEL
- return {"ok":True,"provider_configured":key,"model":model,"version":"3.1"}
+ return {"ok":True,"provider_configured":key,"model":model,"version":"3.3"}
 
 @app.get("/manifest.json", include_in_schema=False)
-def manifest():
- return FileResponse("static/manifest.json", media_type="application/manifest+json")
-
+def manifest(): return FileResponse("static/manifest.json", media_type="application/manifest+json")
 @app.get("/icon.svg", include_in_schema=False)
-def app_icon():
- return FileResponse("static/icon.svg", media_type="image/svg+xml")
-
+def app_icon(): return FileResponse("static/icon.svg", media_type="image/svg+xml")
 @app.get("/sw.js", include_in_schema=False)
-def service_worker():
- return FileResponse("static/sw.js", media_type="application/javascript", headers={"Service-Worker-Allowed":"/"})
+def service_worker(): return FileResponse("static/sw.js", media_type="application/javascript", headers={"Service-Worker-Allowed":"/"})
 
 @app.get("/",include_in_schema=False)
 def app_home():
- path="static/v31.html"
- with open(path,"r",encoding="utf-8") as f:
-  html=f.read()
- install_script="""
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
-}
-</script>
-"""
- if "navigator.serviceWorker.register('/sw.js')" not in html:
-  html=html.replace("</body>",install_script+"</body>")
- if 'rel="icon"' not in html:
-  html=html.replace('<link rel="manifest" href="/manifest.json">','<link rel="manifest" href="/manifest.json"><link rel="icon" href="/icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/icon.svg">')
+ path="static/v33.html"
+ with open(path,"r",encoding="utf-8") as f: html=f.read()
  return HTMLResponse(html)
 
 @app.post("/api/v1/ask")
