@@ -1,13 +1,14 @@
 {
   "name": "시니어 AI 안심 확인",
   "short_name": "AI 안심 확인",
-  "description": "사진으로 위험 신호와 화면 내용을 확인하는 시니어 AI 도우미",
+  "description": "사진 한 장으로 문자, 화면, 안내문과 위험 신호를 쉽게 확인하는 시니어 AI 도우미",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#171717",
+  "background_color": "#f8fbff",
+  "theme_color": "#0f172a",
   "lang": "ko-KR",
+  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/icon.svg",
