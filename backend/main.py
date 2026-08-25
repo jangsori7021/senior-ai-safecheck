@@ -3,18 +3,26 @@ from typing import Literal, List
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel, Field
 from PIL import Image
 from openai import OpenAI
+
 app=FastAPI(title="Senior AI Life Assistant",version="3.1")
 origins=[x.strip() for x in os.getenv("ALLOWED_ORIGINS","").split(",") if x.strip()]
 if origins: app.add_middleware(CORSMiddleware,allow_origins=origins,allow_credentials=False,allow_methods=["GET","POST"],allow_headers=["*"])
+
 class PrivacyHeadersMiddleware(BaseHTTPMiddleware):
  async def dispatch(self,request,call_next):
-  response=await call_next(request);response.headers["Cache-Control"]="no-store";response.headers["Pragma"]="no-cache";response.headers["X-Content-Type-Options"]="nosniff";return response
+  response=await call_next(request)
+  response.headers["Cache-Control"]="no-store"
+  response.headers["Pragma"]="no-cache"
+  response.headers["X-Content-Type-Options"]="nosniff"
+  return response
+
 app.add_middleware(PrivacyHeadersMiddleware)
 MAX_BYTES=int(os.getenv("MAX_IMAGE_BYTES","12582912"));DEFAULT_MODEL="gpt-4.1-mini"
+
 class Risk(BaseModel):
  level:Literal["unknown","low","caution","high"]="unknown";confidence:float=Field(0,ge=0,le=1);reasons:List[str]=Field(default_factory=list,max_length=5)
 class Action(BaseModel):
@@ -22,14 +30,17 @@ class Action(BaseModel):
 class Analysis(BaseModel):
  mode:Literal["safe","explain","screen"]="safe";summary:str="사진을 확인했습니다.";important_points:List[str]=Field(default_factory=list,max_length=5);risk:Risk=Field(default_factory=Risk);uncertainty:List[str]=Field(default_factory=list,max_length=5);next_actions:List[Action]=Field(default_factory=list,max_length=4)
 class AskRequest(BaseModel): question:str
+
 def _client():
  key=os.getenv("OPENAI_API_KEY");model=os.getenv("OPENAI_MODEL",DEFAULT_MODEL).strip() or DEFAULT_MODEL
  if not key: raise HTTPException(503,"AI_PROVIDER_NOT_CONFIGURED")
  return OpenAI(api_key=key),model
+
 def _list(v):
  if v is None:return []
  if isinstance(v,list):return [str(x) for x in v if x is not None][:5]
  return [str(v)]
+
 def _level(v):
  s=str(v or "").strip().lower()
  if s in {"unknown","low","caution","high"}:return s
@@ -37,6 +48,7 @@ def _level(v):
  if any(x in s for x in ["주의","경고","확인 필요","caution","medium","moderate"]):return "caution"
  if any(x in s for x in ["낮","안전","low"]):return "low"
  return "unknown"
+
 def normalize(obj,mode):
  if not isinstance(obj,dict):obj={}
  risk=obj.get("risk") if isinstance(obj.get("risk"),dict) else {}
@@ -48,14 +60,46 @@ def normalize(obj,mode):
    t=str(a.get("type","none"));actions.append({"type":t if t in allowed else "none","label":str(a.get("label") or "추가 확인하기"),"requires_confirmation":bool(a.get("requires_confirmation",True))})
   elif a:actions.append({"type":"none","label":str(a),"requires_confirmation":True})
  return Analysis.model_validate({"mode":mode,"summary":str(obj.get("summary") or "사진을 확인했습니다."),"important_points":_list(obj.get("important_points")),"risk":{"level":_level(risk.get("level")),"confidence":confidence,"reasons":_list(risk.get("reasons"))},"uncertainty":_list(obj.get("uncertainty")),"next_actions":actions})
+
 def safety_gate(x):
  blocked=x.risk.level in {"high","unknown"} or x.risk.confidence<.70
  return {"analysis":x.model_dump(),"safety":{"blocked_from_sensitive_action":blocked,"message":"민감한 행동은 중단하고 추가 확인이 필요합니다." if blocked else "민감한 행동은 사용자 확인 후 진행합니다."}}
+
 @app.get("/health")
 def health():
- key=bool(os.getenv("OPENAI_API_KEY"));model=os.getenv("OPENAI_MODEL",DEFAULT_MODEL).strip() or DEFAULT_MODEL;return {"ok":True,"provider_configured":key,"model":model,"version":"3.1"}
+ key=bool(os.getenv("OPENAI_API_KEY"));model=os.getenv("OPENAI_MODEL",DEFAULT_MODEL).strip() or DEFAULT_MODEL
+ return {"ok":True,"provider_configured":key,"model":model,"version":"3.1"}
+
+@app.get("/manifest.json", include_in_schema=False)
+def manifest():
+ return FileResponse("static/manifest.json", media_type="application/manifest+json")
+
+@app.get("/icon.svg", include_in_schema=False)
+def app_icon():
+ return FileResponse("static/icon.svg", media_type="image/svg+xml")
+
+@app.get("/sw.js", include_in_schema=False)
+def service_worker():
+ return FileResponse("static/sw.js", media_type="application/javascript", headers={"Service-Worker-Allowed":"/"})
+
 @app.get("/",include_in_schema=False)
-def app_home():return FileResponse("static/v31.html")
+def app_home():
+ path="static/v31.html"
+ with open(path,"r",encoding="utf-8") as f:
+  html=f.read()
+ install_script="""
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+}
+</script>
+"""
+ if "navigator.serviceWorker.register('/sw.js')" not in html:
+  html=html.replace("</body>",install_script+"</body>")
+ if 'rel="icon"' not in html:
+  html=html.replace('<link rel="manifest" href="/manifest.json">','<link rel="manifest" href="/manifest.json"><link rel="icon" href="/icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/icon.svg">')
+ return HTMLResponse(html)
+
 @app.post("/api/v1/ask")
 def ask(req:AskRequest):
  q=req.question.strip()
@@ -64,6 +108,7 @@ def ask(req:AskRequest):
  try:
   r=client.responses.create(model=model,input=[{"role":"system","content":[{"type":"input_text","text":prompt}]},{"role":"user","content":[{"type":"input_text","text":q}]}]);return {"answer":r.output_text.strip()}
  except Exception as e: print(f"AI_ASK_ERROR:{type(e).__name__}:{str(e)[:800]}",flush=True);raise HTTPException(502,"AI_ASK_FAILED")
+
 @app.post("/api/v1/analyze-image")
 async def analyze_image(image:UploadFile=File(...),mode:Literal["safe","explain","screen"]=Form(...),voice_context:str=Form("")):
  raw=await image.read()
