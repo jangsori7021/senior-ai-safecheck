@@ -7,8 +7,7 @@ from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel, Field
 from PIL import Image
 from openai import OpenAI
-
-app=FastAPI(title="Senior AI Life Assistant",version="3.6")
+app=FastAPI(title="Senior AI Life Assistant",version="3.7")
 origins=[x.strip() for x in os.getenv("ALLOWED_ORIGINS","").split(",") if x.strip()]
 if origins: app.add_middleware(CORSMiddleware,allow_origins=origins,allow_credentials=False,allow_methods=["GET","POST"],allow_headers=["*"])
 class PrivacyHeadersMiddleware(BaseHTTPMiddleware):
@@ -23,12 +22,10 @@ class Action(BaseModel):
 class Analysis(BaseModel):
  mode:Literal["safe","explain","screen"]="safe";summary:str="사진을 확인했습니다.";important_points:List[str]=Field(default_factory=list,max_length=5);risk:Risk=Field(default_factory=Risk);uncertainty:List[str]=Field(default_factory=list,max_length=5);next_actions:List[Action]=Field(default_factory=list,max_length=4)
 class AskRequest(BaseModel): question:str
-
 def _client():
  key=os.getenv("OPENAI_API_KEY");model=os.getenv("OPENAI_MODEL",DEFAULT_MODEL).strip() or DEFAULT_MODEL
  if not key: raise HTTPException(503,"AI_PROVIDER_NOT_CONFIGURED")
  return OpenAI(api_key=key),model
-
 def _list(v):
  if v is None:return []
  if isinstance(v,list):return [str(x) for x in v if x is not None][:5]
@@ -56,7 +53,7 @@ def safety_gate(x):
  return {"analysis":x.model_dump(),"safety":{"blocked_from_sensitive_action":blocked,"message":"민감한 행동은 중단하고 추가 확인이 필요합니다." if blocked else "민감한 행동은 사용자 확인 후 진행합니다."}}
 @app.get("/health")
 def health():
- key=bool(os.getenv("OPENAI_API_KEY"));model=os.getenv("OPENAI_MODEL",DEFAULT_MODEL).strip() or DEFAULT_MODEL;return {"ok":True,"provider_configured":key,"model":model,"version":"3.6"}
+ key=bool(os.getenv("OPENAI_API_KEY"));model=os.getenv("OPENAI_MODEL",DEFAULT_MODEL).strip() or DEFAULT_MODEL;return {"ok":True,"provider_configured":key,"model":model,"version":"3.7"}
 @app.get("/manifest.json",include_in_schema=False)
 def manifest():return FileResponse("static/manifest.json",media_type="application/manifest+json")
 @app.get("/icon.svg",include_in_schema=False)
@@ -65,7 +62,7 @@ def app_icon():return FileResponse("static/icon.svg",media_type="image/svg+xml")
 def service_worker():return FileResponse("static/sw.js",media_type="application/javascript",headers={"Service-Worker-Allowed":"/"})
 @app.get("/",include_in_schema=False)
 def app_home():
- with open("static/v36.html","r",encoding="utf-8") as f:return HTMLResponse(f.read())
+ with open("static/v37.html","r",encoding="utf-8") as f:return HTMLResponse(f.read())
 @app.post("/api/v1/ask")
 def ask(req:AskRequest):
  q=req.question.strip()
