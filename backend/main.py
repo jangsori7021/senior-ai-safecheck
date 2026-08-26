@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from PIL import Image
 from openai import OpenAI
 
-app=FastAPI(title="Senior AI Life Assistant",version="3.3")
+app=FastAPI(title="Senior AI Life Assistant",version="3.4")
 origins=[x.strip() for x in os.getenv("ALLOWED_ORIGINS","").split(",") if x.strip()]
 if origins: app.add_middleware(CORSMiddleware,allow_origins=origins,allow_credentials=False,allow_methods=["GET","POST"],allow_headers=["*"])
 
@@ -68,7 +68,7 @@ def safety_gate(x):
 @app.get("/health")
 def health():
  key=bool(os.getenv("OPENAI_API_KEY"));model=os.getenv("OPENAI_MODEL",DEFAULT_MODEL).strip() or DEFAULT_MODEL
- return {"ok":True,"provider_configured":key,"model":model,"version":"3.3"}
+ return {"ok":True,"provider_configured":key,"model":model,"version":"3.4"}
 
 @app.get("/manifest.json", include_in_schema=False)
 def manifest(): return FileResponse("static/manifest.json", media_type="application/manifest+json")
@@ -79,7 +79,7 @@ def service_worker(): return FileResponse("static/sw.js", media_type="applicatio
 
 @app.get("/",include_in_schema=False)
 def app_home():
- path="static/v33.html"
+ path="static/v34.html"
  with open(path,"r",encoding="utf-8") as f: html=f.read()
  return HTMLResponse(html)
 
