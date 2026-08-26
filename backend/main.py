@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from PIL import Image
 from openai import OpenAI
 
-app=FastAPI(title="Senior AI Life Secretary",version="4.3")
+app=FastAPI(title="Senior AI Life Secretary",version="4.4")
 origins=[x.strip() for x in os.getenv("ALLOWED_ORIGINS","").split(",") if x.strip()]
 if origins: app.add_middleware(CORSMiddleware,allow_origins=origins,allow_credentials=False,allow_methods=["GET","POST"],allow_headers=["*"])
 
@@ -64,7 +64,7 @@ def safety_gate(x):
  return {"analysis":x.model_dump(),"safety":{"blocked_from_sensitive_action":blocked,"message":"민감한 행동은 중단하고 추가 확인이 필요합니다." if blocked else "민감한 행동은 사용자 확인 후 진행합니다."}}
 
 @app.get("/health")
-def health():return {"ok":True,"provider_configured":bool(os.getenv("OPENAI_API_KEY")),"model":os.getenv("OPENAI_MODEL",DEFAULT_MODEL).strip() or DEFAULT_MODEL,"version":"4.3"}
+def health():return {"ok":True,"provider_configured":bool(os.getenv("OPENAI_API_KEY")),"model":os.getenv("OPENAI_MODEL",DEFAULT_MODEL).strip() or DEFAULT_MODEL,"version":"4.4"}
 @app.get("/manifest.json",include_in_schema=False)
 def manifest():return FileResponse("static/manifest.json",media_type="application/manifest+json")
 @app.get("/icon.svg",include_in_schema=False)
@@ -73,7 +73,20 @@ def app_icon():return FileResponse("static/icon.svg",media_type="image/svg+xml")
 def service_worker():return FileResponse("static/sw.js",media_type="application/javascript",headers={"Service-Worker-Allowed":"/"})
 @app.get("/",include_in_schema=False)
 def app_home():
- with open("static/v43.html","r",encoding="utf-8") as f:return HTMLResponse(f.read())
+ with open("static/v43.html","r",encoding="utf-8") as f:
+  html=f.read()
+  html=html.replace("시니어 AI 생활비서 v4.3","시니어 AI 생활비서 v4.4")
+  html=html.replace('<div id="recentBox" class="box" hidden></div>','')
+  html=html.replace('<button class="card" onclick="showPhotoHistory()"><i>🕘</i><b>최근에 본 것</b><small>전에 확인한 사진과 설명 다시 보기</small></button>','<button class="card" onclick="showPhotoHistory()"><i>🕘</i><b>사진 기록</b><small>전에 확인한 사진과 설명을 다시 봐요</small></button>')
+  html=html.replace('<button class="tools" onclick="show(\'tools\')">생활도구 전체보기 〉</button>','<button class="tools" onclick="show(\'tools\')">✨ 생활 한눈에 〉</button>')
+  html=html.replace('<h1>생활도구</h1>','<h1>생활 한눈에</h1>')
+  html=html.replace('<div id="historyList"></div></section>','<div id="historyList"></div><div class="two"><button class="btn alt" onclick="scrollTo({top:0,behavior:\'smooth\'})">⬆ 맨 위로</button><button class="btn" onclick="show(\'home\')">⌂ 홈으로</button></div></section>')
+  html=html.replace('<input id="parkingNote" class="input" placeholder="예: 지하 3층 B구역 27번 기둥"><button class="btn" onclick="parkingPhoto()">📸 주차 위치 사진 찍기</button>','<input id="parkingNote" class="input" placeholder="예: 지하 3층 B구역 27번 기둥"><button class="btn" onclick="voiceToInput(\'parkingNote\')">🎙 주차 위치 말하기</button><button class="btn" onclick="parkingPhoto()">📸 주차 위치 사진 찍기</button>')
+  html=html.replace('<textarea id="memoryInput" class="input" rows="4" placeholder="예: 9월 15일 오전 10시 안과"></textarea><button class="btn" onclick="saveMemory()">기억하기</button>','<textarea id="memoryInput" class="input" rows="4" placeholder="예: 9월 15일 오전 10시 안과"></textarea><button class="btn" onclick="voiceToInput(\'memoryInput\')">🎙 말해서 기억하기</button><button class="btn alt" onclick="saveMemory()">⌨ 글자로 기억하기</button>')
+  html=html.replace("if(a.length){$('recentBox').hidden=false;$('recentBox').innerHTML=", "if(false&&a.length){$('recentBox').hidden=false;$('recentBox').innerHTML=")
+  voice_js="""function voiceToInput(targetId){const S=window.SpeechRecognition||window.webkitSpeechRecognition;if(!S){alert('이 휴대폰에서는 음성 입력을 사용할 수 없어요. 글자로 입력해 주세요.');return}let r=new S();r.lang='ko-KR';r.interimResults=false;r.maxAlternatives=1;r.onresult=e=>{let t=e.results[0][0].transcript;let el=$(targetId);el.value=(el.value?el.value+' ':'')+t;el.focus()};r.onerror=()=>alert('잘 듣지 못했어요. 다시 눌러 천천히 말씀해 주세요.');r.start()}"""
+  html=html.replace('</script>',voice_js+'</script>')
+  return HTMLResponse(html)
 
 @app.post("/api/v1/ask")
 def ask(req:AskRequest):
