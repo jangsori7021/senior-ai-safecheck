@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from PIL import Image
 from openai import OpenAI
 
-app=FastAPI(title="Senior AI Life Secretary",version="4.5")
+app=FastAPI(title="Senior AI Life Secretary",version="4.6")
 origins=[x.strip() for x in os.getenv("ALLOWED_ORIGINS","").split(",") if x.strip()]
 if origins: app.add_middleware(CORSMiddleware,allow_origins=origins,allow_credentials=False,allow_methods=["GET","POST"],allow_headers=["*"])
 class PrivacyHeadersMiddleware(BaseHTTPMiddleware):
@@ -46,7 +46,7 @@ def safety_gate(x):
  blocked=x.risk.level in {"high","unknown"} or x.risk.confidence<.70
  return {"analysis":x.model_dump(),"safety":{"blocked_from_sensitive_action":blocked,"message":"민감한 행동은 중단하고 추가 확인이 필요합니다." if blocked else "민감한 행동은 사용자 확인 후 진행합니다."}}
 @app.get("/health")
-def health(): return {"ok":True,"provider_configured":bool(os.getenv("OPENAI_API_KEY")),"model":os.getenv("OPENAI_MODEL",DEFAULT_MODEL).strip() or DEFAULT_MODEL,"version":"4.5"}
+def health(): return {"ok":True,"provider_configured":bool(os.getenv("OPENAI_API_KEY")),"model":os.getenv("OPENAI_MODEL",DEFAULT_MODEL).strip() or DEFAULT_MODEL,"version":"4.6"}
 @app.get("/manifest.json",include_in_schema=False)
 def manifest(): return FileResponse("static/manifest.json",media_type="application/manifest+json")
 @app.get("/icon.svg",include_in_schema=False)
@@ -56,7 +56,7 @@ def service_worker(): return FileResponse("static/sw.js",media_type="application
 @app.get("/",include_in_schema=False)
 def app_home():
  with open("static/v43.html","r",encoding="utf-8") as f: html=f.read()
- html=html.replace("시니어 AI 생활비서 v4.3","시니어 AI 생활비서 v4.5")
+ html=html.replace("시니어 AI 생활비서 v4.3","시니어 AI 생활비서 v4.6")
  html=html.replace("메뉴를 찾지 마세요. 그냥 말씀하시면 제가 알아서 도와드릴게요.","위에서는 무엇이든 AI에게 말하거나 물어보세요. 아래 카드는 자주 쓰는 기능 바로가기예요.")
  html=html.replace('<div id="recentBox" class="box" hidden></div>','')
  html=html.replace('<button class="card" onclick="showPhotoHistory()"><i>🕘</i><b>최근에 본 것</b><small>전에 확인한 사진과 설명 다시 보기</small></button>','<button class="card" onclick="showPhotoHistory()"><i>🕘</i><b>사진 기록</b><small>전에 확인한 사진과 설명을 다시 봐요</small></button>')
@@ -65,13 +65,15 @@ def app_home():
  html=html.replace('<div id="memoryList"></div></section>','<div id="memoryList"></div><div class="two"><button class="btn alt" onclick="goTop()">⬆ 맨 위로</button><button class="btn" onclick="show(\'home\')">⌂ 홈으로</button></div></section>')
  html=html.replace('<input id="parkingNote" class="input" placeholder="예: 지하 3층 B구역 27번 기둥"><button class="btn" onclick="parkingPhoto()">📸 주차 위치 사진 찍기</button>','<input id="parkingNote" class="input" placeholder="예: 지하 3층 B구역 27번 기둥"><button class="btn" onclick="voiceToInput(\'parkingNote\')">🎙 주차 위치 말하기</button><button class="btn" onclick="parkingPhoto()">📸 주차 위치 사진 찍기</button>')
  html=html.replace('<textarea id="memoryInput" class="input" rows="4" placeholder="예: 9월 15일 오전 10시 안과"></textarea><button class="btn" onclick="saveMemory()">기억하기</button>','<textarea id="memoryInput" class="input" rows="4" placeholder="예: 9월 15일 오전 10시 안과"></textarea><button class="btn" onclick="voiceToInput(\'memoryInput\')">🎙 말해서 기억하기</button><button class="btn alt" onclick="saveMemory()">⌨ 글자로 기억하기</button>')
- # 생활 한눈에의 중복 기능은 실제 렌더링 직전에 직접 제거한다.
  tools=re.search(r'<section id="tools".*?</section>',html,re.S)
  if tools:
   block=tools.group(0)
   for label in ["약·병원 기억","조용히 할 시간","내 차 찾기","내 기억 찾기"]:
    block=re.sub(r'<button class="card"[^>]*>.*?<b>'+re.escape(label)+r'</b>.*?</button>','',block,count=1,flags=re.S)
   block=re.sub(r'<div class="sectionTitle">🛡️ 건강과 안전</div><div class="grid">\s*<button class="card"[^>]*>.*?<b>이거 괜찮아\?</b>.*?</button>\s*</div>','',block,count=1,flags=re.S)
+  practical='''<div class="sectionTitle">🚶 외출할 때 더 필요한 것</div><div class="grid"><button class="card" onclick="openNearby('주차장')"><i>🅿️</i><b>주차장 찾기</b><small>가까운 주차장 바로 찾기</small></button><button class="card" onclick="openNearby('은행 ATM')"><i>🏧</i><b>은행·ATM</b><small>가까운 현금인출기 찾기</small></button><button class="card" onclick="openNearby('주민센터')"><i>🏢</i><b>주민센터</b><small>가까운 행정복지센터 찾기</small></button><button class="card" onclick="openNearby('우체국')"><i>📮</i><b>우체국</b><small>가까운 우체국 찾기</small></button></div><div class="sectionTitle">💡 생활 속 궁금증</div><div class="grid"><button class="card" onclick="quickAsk('냉장고에 있는 재료를 말할게. 쉽고 간단하게 해 먹을 수 있는 음식을 추천해줘.')"><i>🍳</i><b>뭐 해 먹지?</b><small>있는 재료로 음식 추천</small></button><button class="card" onclick="quickAsk('버리려는 물건을 말할게. 어떻게 분리배출하면 되는지 아주 쉽게 알려줘.')"><i>♻️</i><b>이거 어떻게 버려?</b><small>분리배출 방법 쉽게 묻기</small></button><button class="card" onclick="quickAsk('보내고 싶은 내용을 말할게. 짧고 자연스러운 문자나 카톡 문장으로 만들어줘.')"><i>💬</i><b>문자 써줘</b><small>말하면 문장으로 정리</small></button><button class="card" onclick="quickAsk('휴대폰에서 하고 싶은 일을 말할게. 한 번에 한 단계씩 아주 쉽게 알려줘.')"><i>📱</i><b>휴대폰 알려줘</b><small>한 단계씩 사용법 안내</small></button></div>'''
+  marker='<div class="sectionTitle">☕ 마음 편한 시간</div>'
+  if marker in block: block=block.replace(marker,practical+marker,1)
   html=html[:tools.start()]+block+html[tools.end():]
  extra_js="""
 function goTop(){try{window.scrollTo(0,0)}catch(e){};try{document.documentElement.scrollTop=0;document.body.scrollTop=0}catch(e){}}
