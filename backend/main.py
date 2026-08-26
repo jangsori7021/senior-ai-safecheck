@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel, Field
 from PIL import Image
 from openai import OpenAI
-app=FastAPI(title="Senior AI Life Assistant",version="3.7")
+app=FastAPI(title="Senior AI Life Assistant",version="3.9")
 origins=[x.strip() for x in os.getenv("ALLOWED_ORIGINS","").split(",") if x.strip()]
 if origins: app.add_middleware(CORSMiddleware,allow_origins=origins,allow_credentials=False,allow_methods=["GET","POST"],allow_headers=["*"])
 class PrivacyHeadersMiddleware(BaseHTTPMiddleware):
@@ -52,8 +52,7 @@ def safety_gate(x):
  blocked=x.risk.level in {"high","unknown"} or x.risk.confidence<.70
  return {"analysis":x.model_dump(),"safety":{"blocked_from_sensitive_action":blocked,"message":"민감한 행동은 중단하고 추가 확인이 필요합니다." if blocked else "민감한 행동은 사용자 확인 후 진행합니다."}}
 @app.get("/health")
-def health():
- key=bool(os.getenv("OPENAI_API_KEY"));model=os.getenv("OPENAI_MODEL",DEFAULT_MODEL).strip() or DEFAULT_MODEL;return {"ok":True,"provider_configured":key,"model":model,"version":"3.7"}
+def health():return {"ok":True,"provider_configured":bool(os.getenv("OPENAI_API_KEY")),"model":os.getenv("OPENAI_MODEL",DEFAULT_MODEL).strip() or DEFAULT_MODEL,"version":"3.9"}
 @app.get("/manifest.json",include_in_schema=False)
 def manifest():return FileResponse("static/manifest.json",media_type="application/manifest+json")
 @app.get("/icon.svg",include_in_schema=False)
@@ -62,7 +61,7 @@ def app_icon():return FileResponse("static/icon.svg",media_type="image/svg+xml")
 def service_worker():return FileResponse("static/sw.js",media_type="application/javascript",headers={"Service-Worker-Allowed":"/"})
 @app.get("/",include_in_schema=False)
 def app_home():
- with open("static/v37.html","r",encoding="utf-8") as f:return HTMLResponse(f.read())
+ with open("static/v39.html","r",encoding="utf-8") as f:return HTMLResponse(f.read())
 @app.post("/api/v1/ask")
 def ask(req:AskRequest):
  q=req.question.strip()
