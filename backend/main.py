@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from PIL import Image
 from openai import OpenAI
 
-app=FastAPI(title="Senior AI Life Secretary",version="4.4.1")
+app=FastAPI(title="Senior AI Life Secretary",version="4.4.2")
 origins=[x.strip() for x in os.getenv("ALLOWED_ORIGINS","").split(",") if x.strip()]
 if origins: app.add_middleware(CORSMiddleware,allow_origins=origins,allow_credentials=False,allow_methods=["GET","POST"],allow_headers=["*"])
 
@@ -64,7 +64,7 @@ def safety_gate(x):
  return {"analysis":x.model_dump(),"safety":{"blocked_from_sensitive_action":blocked,"message":"민감한 행동은 중단하고 추가 확인이 필요합니다." if blocked else "민감한 행동은 사용자 확인 후 진행합니다."}}
 
 @app.get("/health")
-def health():return {"ok":True,"provider_configured":bool(os.getenv("OPENAI_API_KEY")),"model":os.getenv("OPENAI_MODEL",DEFAULT_MODEL).strip() or DEFAULT_MODEL,"version":"4.4.1"}
+def health():return {"ok":True,"provider_configured":bool(os.getenv("OPENAI_API_KEY")),"model":os.getenv("OPENAI_MODEL",DEFAULT_MODEL).strip() or DEFAULT_MODEL,"version":"4.4.2"}
 @app.get("/manifest.json",include_in_schema=False)
 def manifest():return FileResponse("static/manifest.json",media_type="application/manifest+json")
 @app.get("/icon.svg",include_in_schema=False)
@@ -75,7 +75,8 @@ def service_worker():return FileResponse("static/sw.js",media_type="application/
 def app_home():
  with open("static/v43.html","r",encoding="utf-8") as f:
   html=f.read()
-  html=html.replace("시니어 AI 생활비서 v4.3","시니어 AI 생활비서 v4.4.1")
+  html=html.replace("시니어 AI 생활비서 v4.3","시니어 AI 생활비서 v4.4.2")
+  html=html.replace("메뉴를 찾지 마세요. 그냥 말씀하시면 제가 알아서 도와드릴게요.","위에서는 무엇이든 AI에게 말하거나 물어보세요. 아래 카드는 자주 쓰는 기능 바로가기예요.")
   html=html.replace('<div id="recentBox" class="box" hidden></div>','')
   html=html.replace('<button class="card" onclick="showPhotoHistory()"><i>🕘</i><b>최근에 본 것</b><small>전에 확인한 사진과 설명 다시 보기</small></button>','<button class="card" onclick="showPhotoHistory()"><i>🕘</i><b>사진 기록</b><small>전에 확인한 사진과 설명을 다시 봐요</small></button>')
   html=html.replace('<button class="tools" onclick="show(\'tools\')">생활도구 전체보기 〉</button>','<button class="tools" onclick="show(\'tools\')">✨ 생활 한눈에 〉</button>')
@@ -85,7 +86,11 @@ def app_home():
   html=html.replace('<input id="parkingNote" class="input" placeholder="예: 지하 3층 B구역 27번 기둥"><button class="btn" onclick="parkingPhoto()">📸 주차 위치 사진 찍기</button>','<input id="parkingNote" class="input" placeholder="예: 지하 3층 B구역 27번 기둥"><button class="btn" onclick="voiceToInput(\'parkingNote\')">🎙 주차 위치 말하기</button><button class="btn" onclick="parkingPhoto()">📸 주차 위치 사진 찍기</button>')
   html=html.replace('<textarea id="memoryInput" class="input" rows="4" placeholder="예: 9월 15일 오전 10시 안과"></textarea><button class="btn" onclick="saveMemory()">기억하기</button>','<textarea id="memoryInput" class="input" rows="4" placeholder="예: 9월 15일 오전 10시 안과"></textarea><button class="btn" onclick="voiceToInput(\'memoryInput\')">🎙 말해서 기억하기</button><button class="btn alt" onclick="saveMemory()">⌨ 글자로 기억하기</button>')
   html=html.replace("if(a.length){$('recentBox').hidden=false;$('recentBox').innerHTML=", "if(false&&a.length){$('recentBox').hidden=false;$('recentBox').innerHTML=")
-  extra_js="""function goTop(){try{window.scrollTo(0,0)}catch(e){};try{document.documentElement.scrollTop=0;document.body.scrollTop=0}catch(e){}}function voiceToInput(targetId){const S=window.SpeechRecognition||window.webkitSpeechRecognition;if(!S){alert('이 휴대폰에서는 음성 입력을 사용할 수 없어요. 글자로 입력해 주세요.');return}let r=new S();r.lang='ko-KR';r.interimResults=false;r.maxAlternatives=1;r.onresult=e=>{let t=e.results[0][0].transcript;let el=$(targetId);el.value=(el.value?el.value+' ':'')+t;el.focus()};r.onerror=()=>alert('잘 듣지 못했어요. 다시 눌러 천천히 말씀해 주세요.');r.start()}"""
+  extra_js="""
+function goTop(){try{window.scrollTo(0,0)}catch(e){};try{document.documentElement.scrollTop=0;document.body.scrollTop=0}catch(e){}}
+function voiceToInput(targetId){const S=window.SpeechRecognition||window.webkitSpeechRecognition;if(!S){alert('이 휴대폰에서는 음성 입력을 사용할 수 없어요. 글자로 입력해 주세요.');return}let r=new S();r.lang='ko-KR';r.interimResults=false;r.maxAlternatives=1;r.onresult=e=>{let t=e.results[0][0].transcript;let el=$(targetId);el.value=(el.value?el.value+' ':'')+t;el.focus()};r.onerror=()=>alert('잘 듣지 못했어요. 다시 눌러 천천히 말씀해 주세요.');r.start()}
+function voiceAsk(){const S=window.SpeechRecognition||window.webkitSpeechRecognition;if(!S){show('asktext');$('askAnswer').hidden=false;$('askAnswer').textContent='이 휴대폰에서는 음성 인식을 사용할 수 없어요. 아래 칸에 글자로 적어주세요.';return}show('asktext');$('askInput').value='';$('askAnswer').hidden=false;$('askAnswer').textContent='🎙 듣고 있어요. 편하게 말씀하세요.';let r=new S();r.lang='ko-KR';r.interimResults=false;r.maxAlternatives=1;r.onresult=e=>{let t=e.results[0][0].transcript;$('askInput').value=t;$('askAnswer').textContent='“'+t+'”라고 들었어요. AI가 답을 준비하고 있어요.';askAI()};r.onerror=e=>{$('askAnswer').hidden=false;$('askAnswer').textContent='잘 듣지 못했어요. 다시 눌러 말씀하시거나 글자로 적어주세요.'};try{r.start()}catch(e){$('askAnswer').textContent='마이크를 시작하지 못했어요. 잠시 후 다시 눌러주세요.'}}
+"""
   html=html.replace('</script>',extra_js+'</script>')
   return HTMLResponse(html)
 
