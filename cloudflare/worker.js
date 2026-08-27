@@ -48,10 +48,11 @@ export default {
  async fetch(request,env){
   const url=new URL(request.url);
   if(url.pathname==='/health'||url.pathname.startsWith('/api/'))return handleApi(request,env,url);
+  // Serve the actual static app entry point. The previous v43.html indirection
+  // could leave the Worker URL without a usable app screen.
   if(url.pathname==='/'||url.pathname==='/index.html'){
-   const assetUrl=new URL('/v43.html',url); const res=await env.ASSETS.fetch(new Request(assetUrl,request)); let html=await res.text();
-   html=html.replaceAll('시니어 AI 생활비서 v4.3',`시니어 AI 생활비서 v${VERSION}`).replace('</body>','<script src="/cloudflare-enhancements.js"></script></body>');
-   return new Response(html,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store'}});
+   const assetUrl=new URL('/index.html',url);
+   return env.ASSETS.fetch(new Request(assetUrl,request));
   }
   return env.ASSETS.fetch(request);
  }
