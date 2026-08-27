@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from PIL import Image
 from openai import OpenAI
 
-VERSION="4.8"
+VERSION="4.9"
 app=FastAPI(title="Senior AI Life Secretary",version=VERSION)
 origins=[x.strip() for x in os.getenv("ALLOWED_ORIGINS","").split(",") if x.strip()]
 if origins: app.add_middleware(CORSMiddleware,allow_origins=origins,allow_credentials=False,allow_methods=["GET","POST"],allow_headers=["*"])
@@ -23,6 +23,8 @@ class Analysis(BaseModel): mode:Literal["safe","explain","screen"]="safe"; summa
 class AskRequest(BaseModel): question:str
 class MessageRequest(BaseModel): content:str; tone:str="따뜻하고 자연스럽게"
 class CookingRequest(BaseModel): ingredients:str; preference:str="쉽고 간단하게"
+class DisposalRequest(BaseModel): item:str; region:str=""
+
 def _client():
  key=os.getenv("OPENAI_API_KEY"); model=os.getenv("OPENAI_MODEL",DEFAULT_MODEL).strip() or DEFAULT_MODEL
  if not key: raise HTTPException(503,"AI_PROVIDER_NOT_CONFIGURED")
@@ -48,6 +50,7 @@ def normalize(obj,mode):
 def safety_gate(x):
  blocked=x.risk.level in {"high","unknown"} or x.risk.confidence<.70
  return {"analysis":x.model_dump(),"safety":{"blocked_from_sensitive_action":blocked,"message":"민감한 행동은 중단하고 추가 확인이 필요합니다." if blocked else "민감한 행동은 사용자 확인 후 진행합니다."}}
+
 @app.get("/health")
 def health(): return {"ok":True,"provider_configured":bool(os.getenv("OPENAI_API_KEY")),"model":os.getenv("OPENAI_MODEL",DEFAULT_MODEL).strip() or DEFAULT_MODEL,"version":VERSION}
 @app.get("/manifest.json",include_in_schema=False)
@@ -56,6 +59,7 @@ def manifest(): return FileResponse("static/manifest.json",media_type="applicati
 def app_icon(): return FileResponse("static/icon.svg",media_type="image/svg+xml")
 @app.get("/sw.js",include_in_schema=False)
 def service_worker(): return FileResponse("static/sw.js",media_type="application/javascript",headers={"Service-Worker-Allowed":"/"})
+
 @app.get("/",include_in_schema=False)
 def app_home():
  with open("static/v43.html","r",encoding="utf-8") as f: html=f.read()
@@ -74,13 +78,14 @@ def app_home():
   for label in ["약·병원 기억","조용히 할 시간","내 차 찾기","내 기억 찾기"]:
    block=re.sub(r'<button class="card"[^>]*>.*?<b>'+re.escape(label)+r'</b>.*?</button>','',block,count=1,flags=re.S)
   block=re.sub(r'<div class="sectionTitle">🛡️ 건강과 안전</div><div class="grid">\s*<button class="card"[^>]*>.*?<b>이거 괜찮아\?</b>.*?</button>\s*</div>','',block,count=1,flags=re.S)
-  practical='''<div class="sectionTitle">🚶 외출할 때 더 필요한 것</div><div class="grid"><button class="card" onclick="openNearby('주차장')"><i>🅿️</i><b>주차장 찾기</b><small>가까운 주차장 바로 찾기</small></button><button class="card" onclick="openNearby('은행 ATM')"><i>🏧</i><b>은행·ATM</b><small>가까운 현금인출기 찾기</small></button><button class="card" onclick="openNearby('주민센터')"><i>🏢</i><b>주민센터</b><small>가까운 행정복지센터 찾기</small></button><button class="card" onclick="openNearby('우체국')"><i>📮</i><b>우체국</b><small>가까운 우체국 찾기</small></button></div><div class="sectionTitle">💡 생활 속 궁금증</div><div class="grid"><button class="card" onclick="openCookingAssistant()"><i>🍳</i><b>뭐 해 먹지?</b><small>재료를 말하면 AI가 요리 추천</small></button><button class="card" onclick="quickAsk('버리려는 물건을 말할게. 어떻게 분리배출하면 되는지 아주 쉽게 알려줘.')"><i>♻️</i><b>이거 어떻게 버려?</b><small>분리배출 방법 쉽게 묻기</small></button><button class="card" onclick="openMessageComposer()"><i>💬</i><b>문자 써줘</b><small>말하면 AI가 문자로 완성</small></button><button class="card" onclick="quickAsk('휴대폰에서 하고 싶은 일을 말할게. 한 번에 한 단계씩 아주 쉽게 알려줘.')"><i>📱</i><b>휴대폰 알려줘</b><small>한 단계씩 사용법 안내</small></button></div>'''
+  practical='''<div class="sectionTitle">🚶 외출할 때 더 필요한 것</div><div class="grid"><button class="card" onclick="openNearby('주차장')"><i>🅿️</i><b>주차장 찾기</b><small>가까운 주차장 바로 찾기</small></button><button class="card" onclick="openNearby('은행 ATM')"><i>🏧</i><b>은행·ATM</b><small>가까운 현금인출기 찾기</small></button><button class="card" onclick="openNearby('주민센터')"><i>🏢</i><b>주민센터</b><small>가까운 행정복지센터 찾기</small></button><button class="card" onclick="openNearby('우체국')"><i>📮</i><b>우체국</b><small>가까운 우체국 찾기</small></button></div><div class="sectionTitle">💡 생활 속 궁금증</div><div class="grid"><button class="card" onclick="openCookingAssistant()"><i>🍳</i><b>뭐 해 먹지?</b><small>재료를 말하면 AI가 요리 추천</small></button><button class="card" onclick="openDisposalAssistant()"><i>♻️</i><b>이거 어떻게 버려?</b><small>물건을 말하면 버리는 법 안내</small></button><button class="card" onclick="openMessageComposer()"><i>💬</i><b>문자 써줘</b><small>말하면 AI가 문자로 완성</small></button><button class="card" onclick="quickAsk('휴대폰에서 하고 싶은 일을 말할게. 한 번에 한 단계씩 아주 쉽게 알려줘.')"><i>📱</i><b>휴대폰 알려줘</b><small>한 단계씩 사용법 안내</small></button></div>'''
   marker='<div class="sectionTitle">☕ 마음 편한 시간</div>'
   if marker in block: block=block.replace(marker,practical+marker,1)
   html=html[:tools.start()]+block+html[tools.end():]
  message_section='''<section id="messageComposer" class="screen"><button class="back" onclick="show('tools')">‹ 생활 한눈에</button><h1>💬 문자 써줘</h1><div class="box notice">보내고 싶은 내용을 편하게 말씀하세요. AI가 자연스러운 문자로 다듬어 드려요.</div><textarea id="messageInput" class="input" rows="4" placeholder="예: 김 집사님께 내일 모임에 조금 늦는다고 전해줘"></textarea><button class="btn" onclick="voiceToInput('messageInput')">🎙 말로 내용 입력</button><div class="two"><button class="btn alt" onclick="setTone('짧고 간단하게')">짧게</button><button class="btn alt" onclick="setTone('따뜻하고 자연스럽게')">따뜻하게</button></div><div class="two"><button class="btn alt" onclick="setTone('정중하고 예의 바르게')">정중하게</button><button class="btn alt" onclick="setTone('친근하고 편하게')">친근하게</button></div><div id="messageTone" class="box">말투: 따뜻하고 자연스럽게</div><button class="btn" onclick="composeMessage()">✨ AI가 문자 만들기</button><div id="messageResultWrap" hidden><div class="sectionTitle">완성된 문자</div><textarea id="messageResult" class="input" rows="6"></textarea><button class="btn" onclick="copyMessage()">📋 문자 복사하기</button><button class="btn alt" onclick="sendSMS()">💬 문자 앱 열기</button><button class="btn alt" onclick="composeMessage('더 짧고 간단하게 다시 써줘')">↻ 더 짧게 다시 쓰기</button><button class="btn alt" onclick="composeMessage('조금 더 따뜻하고 부드럽게 다시 써줘')">♡ 더 따뜻하게 고치기</button></div><div class="two"><button class="btn alt" onclick="goTop()">⬆ 맨 위로</button><button class="btn" onclick="show('home')">⌂ 홈으로</button></div></section>'''
  cooking_section='''<section id="cookingAssistant" class="screen"><button class="back" onclick="show('tools')">‹ 생활 한눈에</button><h1>🍳 뭐 해 먹지?</h1><div class="box notice"><b>집에 있는 재료만 말씀하세요.</b><br>어르신이 만들기 쉬운 음식으로 골라서 순서대로 알려드려요.</div><textarea id="cookingInput" class="input" rows="4" placeholder="예: 계란 두 개, 두부, 대파가 있어"></textarea><button class="btn" onclick="voiceToInput('cookingInput')">🎙 재료 말하기</button><div class="two"><button class="btn alt" onclick="setCookingPreference('10분 안에 간단하게')">10분 요리</button><button class="btn alt" onclick="setCookingPreference('재료를 적게 쓰고 아주 쉽게')">아주 쉽게</button></div><div class="two"><button class="btn alt" onclick="setCookingPreference('속이 편하고 자극적이지 않게')">속 편하게</button><button class="btn alt" onclick="setCookingPreference('반찬으로 먹기 좋게')">반찬으로</button></div><div id="cookingPreference" class="box">원하는 방식: 쉽고 간단하게</div><button class="btn" onclick="recommendCooking()">✨ 이 재료로 추천해줘</button><div id="cookingResultWrap" hidden><div class="sectionTitle">추천 요리</div><div id="cookingResult" class="box"></div><button class="btn alt" onclick="recommendCooking('다른 음식 하나를 추천해줘')">↻ 다른 음식 추천</button><button class="btn alt" onclick="recommendCooking('조리 순서를 더 짧고 쉽게 다시 설명해줘')">👵 더 쉽게 설명</button></div><div class="two"><button class="btn alt" onclick="goTop()">⬆ 맨 위로</button><button class="btn" onclick="show('home')">⌂ 홈으로</button></div></section>'''
- html=html.replace('<section id="travel"',message_section+cooking_section+'<section id="travel"',1)
+ disposal_section='''<section id="disposalAssistant" class="screen"><button class="back" onclick="show('tools')">‹ 생활 한눈에</button><h1>♻️ 이거 어떻게 버려?</h1><div class="box notice"><b>버릴 물건을 말씀하세요.</b><br>재활용인지, 일반쓰레기인지, 따로 버려야 하는지 쉽게 알려드려요.</div><textarea id="disposalInput" class="input" rows="3" placeholder="예: 깨진 유리컵, 스티로폼 상자, 오래된 프라이팬"></textarea><button class="btn" onclick="voiceToInput('disposalInput')">🎙 물건 이름 말하기</button><input id="disposalRegion" class="input" placeholder="지역(선택) 예: 대구 북구"><button class="btn alt" onclick="voiceToInput('disposalRegion')">🎙 지역 말하기</button><button class="btn" onclick="checkDisposal()">✨ 버리는 방법 알려줘</button><div id="disposalResultWrap" hidden><div class="sectionTitle">버리는 방법</div><div id="disposalResult" class="box"></div><button class="btn alt" onclick="checkDisposal('더 짧고 쉽게, 핵심만 다시 설명해줘')">👵 더 쉽게 설명</button><button class="btn alt" onclick="checkDisposal('이 물건이 재활용 가능한지와 주의할 점을 다시 확인해줘')">🔎 다시 확인</button></div><div class="box notice"><b>지역마다 규칙이 조금 다를 수 있어요.</b><br>AI가 확실하지 않으면 주민센터나 구청 확인이 필요하다고 안내합니다.</div><div class="two"><button class="btn alt" onclick="goTop()">⬆ 맨 위로</button><button class="btn" onclick="show('home')">⌂ 홈으로</button></div></section>'''
+ html=html.replace('<section id="travel"',message_section+cooking_section+disposal_section+'<section id="travel"',1)
  extra_js="""
 let messageTone='따뜻하고 자연스럽게';let cookingPreference='쉽고 간단하게';
 function goTop(){try{window.scrollTo(0,0)}catch(e){};try{document.documentElement.scrollTop=0;document.body.scrollTop=0}catch(e){}}
@@ -95,9 +100,23 @@ function sendSMS(){let t=$('messageResult').value.trim();if(!t){alert('먼저 �
 function openCookingAssistant(){show('cookingAssistant');$('cookingResultWrap').hidden=true;goTop()}
 function setCookingPreference(t){cookingPreference=t;$('cookingPreference').textContent='원하는 방식: '+t}
 async function recommendCooking(extra=''){let ingredients=$('cookingInput').value.trim();if(!ingredients){alert('집에 있는 재료를 말하거나 적어주세요.');return}let preference=cookingPreference+(extra?' / '+extra:'');$('cookingResultWrap').hidden=false;$('cookingResult').textContent='AI가 만들기 쉬운 음식을 찾고 있어요...';try{let r=await fetch('/api/v1/cooking',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ingredients:ingredients,preference:preference})});if(!r.ok)throw new Error();let d=await r.json();$('cookingResult').textContent=d.answer||'추천을 만들지 못했어요.'}catch(e){$('cookingResult').textContent='지금은 AI 연결이 원활하지 않아요. 잠시 후 다시 눌러주세요.'}}
+function openDisposalAssistant(){show('disposalAssistant');$('disposalResultWrap').hidden=true;goTop()}
+async function checkDisposal(extra=''){let item=$('disposalInput').value.trim(),region=$('disposalRegion').value.trim();if(!item){alert('버릴 물건을 말하거나 적어주세요.');return}if(extra)item=item+' / 추가 요청: '+extra;$('disposalResultWrap').hidden=false;$('disposalResult').textContent='AI가 버리는 방법을 확인하고 있어요...';try{let r=await fetch('/api/v1/disposal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({item:item,region:region})});if(!r.ok)throw new Error();let d=await r.json();$('disposalResult').textContent=d.answer||'방법을 확인하지 못했어요.'}catch(e){$('disposalResult').textContent='지금은 AI 연결이 원활하지 않아요. 잠시 후 다시 눌러주세요.'}}
 """
  html=html.replace('</script>',extra_js+'</script>')
  return HTMLResponse(html)
+
+@app.post("/api/v1/disposal")
+def disposal(req:DisposalRequest):
+ item=req.item.strip(); region=req.region.strip()
+ if not item: raise HTTPException(400,"EMPTY_ITEM")
+ client,model=_client(); region_rule=f"사용자 지역은 {region}이다. 지역별 차이가 있을 수 있으면 이 지역의 정확한 규칙을 아는 척하지 말고 관할 구청/주민센터 확인을 안내한다." if region else "지역이 입력되지 않았다. 지역별 차이가 있는 항목은 관할 구청/주민센터 확인이 필요하다고 말한다."
+ prompt=f'''너는 한국 시니어를 위한 분리배출 도우미다. {region_rule} 사용자가 버리려는 물건을 보고 가장 일반적인 한국 분리배출 원칙으로 안내한다. 첫 줄에 '결론: ...'으로 버릴 방법을 말한다. 다음에 1) 준비할 것 2) 버리는 곳/방법 3) 조심할 점을 아주 쉬운 말로 최대 4줄 안에서 설명한다. 깨진 유리, 칼날, 배터리, 형광등, 약, 전자제품처럼 다칠 수 있거나 별도 수거가 필요한 것은 안전 주의를 먼저 포함한다. 확실하지 않은 품목은 추측하지 말고 '지역 확인 필요'라고 명확히 말한다. 재활용 가능 여부를 단정하기 어려우면 단정하지 않는다.'''
+ try:
+  r=client.responses.create(model=model,input=[{"role":"system","content":[{"type":"input_text","text":prompt}]},{"role":"user","content":[{"type":"input_text","text":item}]}]); return {"answer":r.output_text.strip()}
+ except Exception as e:
+  print(f"AI_DISPOSAL_ERROR:{type(e).__name__}:{str(e)[:800]}",flush=True); raise HTTPException(502,"AI_DISPOSAL_FAILED")
+
 @app.post("/api/v1/cooking")
 def cooking(req:CookingRequest):
  ingredients=req.ingredients.strip(); preference=req.preference.strip() or "쉽고 간단하게"
@@ -107,6 +126,7 @@ def cooking(req:CookingRequest):
   r=client.responses.create(model=model,input=[{"role":"system","content":[{"type":"input_text","text":prompt}]},{"role":"user","content":[{"type":"input_text","text":ingredients}]}]); return {"answer":r.output_text.strip()}
  except Exception as e:
   print(f"AI_COOKING_ERROR:{type(e).__name__}:{str(e)[:800]}",flush=True); raise HTTPException(502,"AI_COOKING_FAILED")
+
 @app.post("/api/v1/compose-message")
 def compose_message(req:MessageRequest):
  content=req.content.strip(); tone=req.tone.strip() or "따뜻하고 자연스럽게"
@@ -116,6 +136,7 @@ def compose_message(req:MessageRequest):
   r=client.responses.create(model=model,input=[{"role":"system","content":[{"type":"input_text","text":prompt}]},{"role":"user","content":[{"type":"input_text","text":content}]}]); return {"message":r.output_text.strip()}
  except Exception as e:
   print(f"AI_MESSAGE_ERROR:{type(e).__name__}:{str(e)[:800]}",flush=True); raise HTTPException(502,"AI_MESSAGE_FAILED")
+
 @app.post("/api/v1/ask")
 def ask(req:AskRequest):
  q=req.question.strip()
@@ -125,6 +146,7 @@ def ask(req:AskRequest):
   r=client.responses.create(model=model,input=[{"role":"system","content":[{"type":"input_text","text":prompt}]},{"role":"user","content":[{"type":"input_text","text":q}]}]); return {"answer":r.output_text.strip()}
  except Exception as e:
   print(f"AI_ASK_ERROR:{type(e).__name__}:{str(e)[:800]}",flush=True); raise HTTPException(502,"AI_ASK_FAILED")
+
 @app.post("/api/v1/analyze-image")
 async def analyze_image(image:UploadFile=File(...),mode:Literal["safe","explain","screen"]=Form(...),voice_context:str=Form("")):
  raw=await image.read()
