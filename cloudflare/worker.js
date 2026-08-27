@@ -1,4 +1,4 @@
-const VERSION='5.3';
+const VERSION='5.3.2';
 const OPENAI_URL='https://api.openai.com/v1/responses';
 
 function json(data,status=200){return new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff'}})}
@@ -48,10 +48,10 @@ export default {
  async fetch(request,env){
   const url=new URL(request.url);
   if(url.pathname==='/health'||url.pathname.startsWith('/api/'))return handleApi(request,env,url);
-  // Serve the actual static app entry point. The previous v43.html indirection
-  // could leave the Worker URL without a usable app screen.
+  // Avoid Cloudflare Static Assets /index.html -> / canonical redirect loop.
+  // Serve a real non-index HTML asset as the app entry instead.
   if(url.pathname==='/'||url.pathname==='/index.html'){
-   const assetUrl=new URL('/index.html',url);
+   const assetUrl=new URL('/v43.html',url);
    return env.ASSETS.fetch(new Request(assetUrl,request));
   }
   return env.ASSETS.fetch(request);
