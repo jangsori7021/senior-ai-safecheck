@@ -1,4 +1,4 @@
-const VERSION='5.3.2';
+const VERSION='5.4.0';
 const OPENAI_URL='https://api.openai.com/v1/responses';
 
 function json(data,status=200){return new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff'}})}
@@ -44,16 +44,45 @@ async function handleApi(request,env,url){
  }catch(e){return json({error:String(e.message||e)},502)}
 }
 
+const SENIOR_STYLE=`<style>
+:root{--senior-accent:#315b57}.hero{padding:22px!important}.hero h1{font-size:34px!important;line-height:1.18!important}.hero p{font-size:19px!important;line-height:1.55!important}.ask{min-height:74px!important;font-size:22px!important}.card{min-height:128px!important;padding:16px!important}.card b{font-size:21px!important}.card small{font-size:15px!important;line-height:1.45!important}.senior-priority{border:3px solid #315b57!important;box-shadow:0 8px 22px rgba(49,91,87,.18)!important}.senior-quick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}.senior-quick button{border:0;border-radius:18px;min-height:72px;padding:12px;background:#fff;font-size:18px;font-weight:900;color:#26302f;box-shadow:0 4px 14px rgba(33,50,47,.10)}.senior-quick button:first-child{grid-column:1/-1;background:#315b57;color:#fff;font-size:22px;min-height:82px}.senior-note{background:#eef5f2;border-radius:16px;padding:12px 14px;font-size:16px;line-height:1.5;margin:12px 0}.sectionTitle{font-size:20px!important}.version{font-size:12px!important}
+@media(max-width:390px){.hero h1{font-size:31px!important}.senior-quick{grid-template-columns:1fr}.senior-quick button:first-child{grid-column:auto}}
+</style>`;
+
+const SENIOR_SCRIPT=`<script>(function(){
+function byText(sel,text){return [...document.querySelectorAll(sel)].find(x=>x.textContent.includes(text))}
+function enhance(){
+ const hero=document.querySelector('#home .hero'); if(!hero)return;
+ const h=hero.querySelector('h1'); if(h)h.textContent='말씀만 하세요. 제가 도와드릴게요.';
+ const p=hero.querySelector('p'); if(p)p.innerHTML='메뉴를 찾지 않아도 됩니다.<br><b>말하거나 큰 버튼 하나만 누르세요.</b>';
+ const voice=hero.querySelector('.voice'); if(voice){voice.textContent='🎙 GPT야, 이것 좀 해줘';voice.setAttribute('aria-label','음성으로 무엇이든 부탁하기')}
+ const text=hero.querySelector('.text'); if(text)text.textContent='⌨ 글자로 물어보기';
+ let quick=document.getElementById('seniorQuick');
+ if(!quick){quick=document.createElement('div');quick.id='seniorQuick';quick.className='senior-quick';quick.innerHTML='<button onclick="voiceAsk()">🎙 그냥 말해서 부탁하기</button><button onclick="photo(\'explain\')">📷 이게 뭐야?</button><button onclick="openTravel(\'route\')">📍 어디로 가?</button><button onclick="show(\'parking\')">🚗 내 차 어디 있지?</button><button onclick="show(\'remember\')">🧠 이것 좀 기억해줘</button>';hero.insertAdjacentElement('afterend',quick)}
+ const title=byText('#home .sectionTitle','AI가 특히'); if(title)title.textContent='자주 쓰는 생활 도움';
+ const priorities=['이것 좀 봐줘','내 차 어디 있지?','내 기억 찾아줘','기억해 줘'];
+ document.querySelectorAll('#home .card').forEach(c=>{const b=c.querySelector('b');if(b&&priorities.some(t=>b.textContent.includes(t)))c.classList.add('senior-priority')});
+ const tools=document.querySelector('#home .tools'); if(tools)tools.textContent='✨ 더 많은 생활 도움 보기';
+ const v=document.querySelector('#home .version'); if(v)v.textContent='시니어 AI 생활비서 · 실사용 개선판';
+ if(!document.getElementById('seniorNote')){const n=document.createElement('div');n.id='seniorNote';n.className='senior-note';n.innerHTML='💡 <b>처음 쓰셔도 괜찮아요.</b> 잘못 눌러도 홈으로 돌아올 수 있고, 어려우면 그냥 말로 부탁하세요.';tools?.insertAdjacentElement('beforebegin',n)}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',enhance);else enhance();
+})();</script>`;
+
+async function appResponse(request,env,url){
+ const assetUrl=new URL('/v43.html',url);
+ const res=await env.ASSETS.fetch(new Request(assetUrl,request));
+ if(!res.ok)return res;
+ const html=await res.text();
+ const body=html.replace('</head>',SENIOR_STYLE+'</head>').replace('</body>',SENIOR_SCRIPT+'</body>');
+ return new Response(body,{status:res.status,headers:{'content-type':'text/html; charset=utf-8','cache-control':'no-store','x-senior-app-version':VERSION}});
+}
+
 export default {
  async fetch(request,env){
   const url=new URL(request.url);
   if(url.pathname==='/health'||url.pathname.startsWith('/api/'))return handleApi(request,env,url);
-  // Avoid Cloudflare Static Assets /index.html -> / canonical redirect loop.
-  // Serve a real non-index HTML asset as the app entry instead.
-  if(url.pathname==='/'||url.pathname==='/index.html'){
-   const assetUrl=new URL('/v43.html',url);
-   return env.ASSETS.fetch(new Request(assetUrl,request));
-  }
+  if(url.pathname==='/'||url.pathname==='/index.html')return appResponse(request,env,url);
   return env.ASSETS.fetch(request);
  }
 };
