@@ -1,0 +1,46 @@
+name: Senior App Regression Guard
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Worker JavaScript syntax
+        run: node --check cloudflare/worker.js
+      - name: Verify protected senior flows
+        shell: bash
+        run: |
+          set -euo pipefail
+          f=cloudflare/worker.js
+          required=(
+            "const VERSION='5.4.0'"
+            "/api/v1/ask"
+            "/api/v1/compose-message"
+            "/api/v1/cooking"
+            "/api/v1/disposal"
+            "/api/v1/phone-help"
+            "/api/v1/analyze-image"
+            "voiceAsk()"
+            "photo(\\'explain\\')"
+            "photo(\\'safe\\')"
+            "openTravel(\\'route\\')"
+            "show(\\'remember\\')"
+            "show(\\'parking\\')"
+            "openMessageHelp()"
+          )
+          for token in "${required[@]}"; do
+            grep -Fq "$token" "$f" || { echo "Missing protected flow: $token"; exit 1; }
+          done
+          echo "Protected senior flows are present."
+      - name: Verify PWA core assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f backend/static/v43.html
+          test -f backend/static/manifest.webmanifest || test -f backend/static/manifest.json
+          find backend/static -maxdepth 1 -type f | sort
