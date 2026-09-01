@@ -37,10 +37,25 @@ jobs:
             grep -Fq "$token" "$f" || { echo "Missing protected flow: $token"; exit 1; }
           done
           echo "Protected senior flows are present."
-      - name: Verify PWA core assets
+      - name: Verify four-action navigation targets
         shell: bash
         run: |
           set -euo pipefail
-          test -f backend/static/v43.html
-          test -f backend/static/manifest.webmanifest || test -f backend/static/manifest.json
-          find backend/static -maxdepth 1 -type f | sort
+          base=backend/static/v43.html
+          for id in home parking memory remember tools travel; do
+            grep -Fq "id=\"$id\"" "$base" || { echo "Missing screen target: $id"; exit 1; }
+          done
+          for fn in "function voiceAsk" "function photo" "function openTravel" "function show"; do
+            grep -Fq "$fn" "$base" || { echo "Missing base function: $fn"; exit 1; }
+          done
+          echo "Four-action navigation targets and base functions are wired."
+      - name: Verify PWA core assets and manifest wiring
+        shell: bash
+        run: |
+          set -euo pipefail
+          base=backend/static/v43.html
+          test -f "$base"
+          if test -f backend/static/manifest.json; then manifest=/manifest.json; elif test -f backend/static/manifest.webmanifest; then manifest=/manifest.webmanifest; else echo "Missing PWA manifest"; exit 1; fi
+          grep -Fq "rel=\"manifest\"" "$base" || { echo "Base screen is not wired to a manifest"; exit 1; }
+          grep -Fq "$manifest" "$base" || { echo "Manifest link does not match available manifest: $manifest"; exit 1; }
+          echo "PWA core assets and manifest wiring are present."
