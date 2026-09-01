@@ -59,3 +59,20 @@ jobs:
           grep -Fq "rel=\"manifest\"" "$base" || { echo "Base screen is not wired to a manifest"; exit 1; }
           grep -Fq "$manifest" "$base" || { echo "Manifest link does not match available manifest: $manifest"; exit 1; }
           echo "PWA core assets and manifest wiring are present."
+      - name: Build verified deployment ZIP
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          zip -r dist/senior-ai-life-platform_v5.4.0_verified.zip cloudflare backend/static wrangler.jsonc package.json package-lock.json -x 'backend/static/__pycache__/*' '*.pyc'
+          sha256sum dist/senior-ai-life-platform_v5.4.0_verified.zip > dist/SHA256SUMS.txt
+      - name: Upload verified deployment artifact
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: senior-ai-life-platform-v5.4.0-verified
+          path: |
+            dist/senior-ai-life-platform_v5.4.0_verified.zip
+            dist/SHA256SUMS.txt
+          retention-days: 30
